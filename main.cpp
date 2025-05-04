@@ -67,16 +67,16 @@ void adminMenu() {
 
 	switch(choice){
 		case 1:
-			cout << "+++++ USER LOGIN +++++" << endl << endl;
+			cout << "+++++ ADMIN LOGIN +++++" << endl << endl;
 			if(admin.login()){
-				//userOptions(user);
+				//adminOptions(admin);
 			} else {
 				cout << "Invalid login credentials" << endl;
 				system("pause");
 			}
 			break;
 		case 2:
-			cout << "+++++ USER SIGN UP +++++" << endl;
+			cout << "+++++ ADMIN SIGN UP +++++" << endl;
 			admin.signup();
 			break;
 		case 0:

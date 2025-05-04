@@ -68,8 +68,8 @@ class Admin {
 
 			if (qstate == 0 && res) {
 			    row = mysql_fetch_row(res);
-			    if (row && atoi(row[0]) > 0) {
-			        cout << "An admin account already exists. Only one admin account is allowed." << endl;
+			    if (row && atoi(row[0]) >= 2) {
+			        cout << "The total of existing admin accounts cannot exceed its limit (2)." << endl;
 			        mysql_free_result(res);
 			        return;
 			    }
