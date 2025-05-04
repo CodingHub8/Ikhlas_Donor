@@ -15,7 +15,8 @@ add_executable(Ikhlas_Donor
         DBConnection.h
         main.cpp
         User.h
-        Utilities.h)
+        Utilities.h
+        Admin.h)
 
 target_link_libraries(Ikhlas_Donor
         mysql
