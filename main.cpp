@@ -61,6 +61,8 @@ void userOptions(User user) {
 	} else if (toLowerCase(user.getRole()) == "recipient") {
 		recipientOptions();
 	}
+	cout << "+ 3. Edit Profile                             +" << endl;
+	cout << "+ 4. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
@@ -71,11 +73,23 @@ void userOptions(User user) {
 			break;
 		case 2:
 			break;
+		case 3:
+			system("cls");//clear text
+			user.editProfile();
+			break;
+		case 4:
+			system("cls");//clear text
+			if (user.deleteProfile()) {
+				userMenu();
+			}
+			break;
 		case 0:
 			return;//return to previous page
 		default:
 			cout << "Invalid choice. Please try again." << endl << endl;
 	}
+
+	userOptions(user);
 }
 
 void donorOptions() {
@@ -147,6 +161,8 @@ void adminOptions(Admin admin) {
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Option 1                                 +" << endl;
 	cout << "+ 2. Option 2                                 +" << endl;
+	cout << "+ 3. Edit Profile                             +" << endl;
+	cout << "+ 4. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
@@ -157,11 +173,23 @@ void adminOptions(Admin admin) {
 			break;
 		case 2:
 			break;
+		case 3:
+			system("cls");//clear text
+			admin.editProfile();
+			break;
+		case 4:
+			system("cls");//clear text
+			if (admin.deleteProfile()) {
+				adminMenu();
+			}
+			break;
 		case 0:
 			return;//return to previous page
 		default:
 			cout << "Invalid choice. Please try again." << endl << endl;
 	}
+
+	adminOptions(admin);
 }
 // Admin section ends
 

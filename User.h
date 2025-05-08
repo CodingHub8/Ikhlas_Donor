@@ -25,7 +25,7 @@ class User {
 
 		User() = default;// Default constructor
 
-		bool login() {
+		bool login() {//Read function
 			char emailInput[100];
 			cout << "Enter Email: ";
 			cin.getline(emailInput, 100, '\n');
@@ -61,7 +61,7 @@ class User {
 			return false;// Return false indicating failed login
 		}
 
-		void signup() {
+		void signup() {//Create function
 			char nameInput[100], emailInput[100], phoneInput[20], passwordInput[255], confirmPassword[255];
 		    string addressInput, roleInput;
 
@@ -176,6 +176,156 @@ class User {
 		    } else {
 		        cout << "Failed to sign up: " << mysql_error(conn) << endl;
 		    }
+		}
+
+		void editProfile() {// Update function (select specific field)
+			while (true) {
+				cout << "\n--- Edit Profile ---\n";
+				cout << "1. Name (" << name << ")\n";
+				cout << "2. Phone (" << phone << ")\n";
+				cout << "3. Address (" << address << ")\n";
+				cout << "4. Role (" << role << ")\n";
+				cout << "5. Password\n";
+				cout << "0. Cancel\n";
+				cout << "Select the field you want to update [0-5]: ";
+				int choice;
+				input(choice);
+				string updateQuery;
+				bool updated = false;
+
+				switch (choice) {
+					case 1: { // Name
+						char nameInput[100];
+						cout << "Enter new name: ";
+						cin.getline(nameInput, 100);
+						if (strlen(nameInput) == 0) { cout << "Name cannot be empty.\n"; break; }
+						updateQuery = "UPDATE user SET NAME = '" + string(nameInput) + "' WHERE ID = " + to_string(ID);
+						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
+						if (updated) strcpy(name, nameInput);
+						break;
+					}
+					case 2: { // Phone
+						char phoneInput[20];
+						cout << "Enter new phone (leave empty to set as NULL): ";
+						cin.getline(phoneInput, 20);
+
+						string phoneStr = phoneInput; // For usage below
+						if (!phoneStr.empty()) {
+							// Check if phone already exists for another user
+							string checkPhoneQuery = "SELECT ID FROM user WHERE PHONE = '" + phoneStr + "' AND ID != " + to_string(ID);
+							if (mysql_query(conn, checkPhoneQuery.c_str()) == 0) {
+								MYSQL_RES* res = mysql_store_result(conn);
+								if (res && mysql_num_rows(res) > 0) {
+									cout << "This phone number is already in use by another account.\n";
+									mysql_free_result(res);
+									break;
+								}
+								if (res) mysql_free_result(res);
+							} else {
+								cout << "Failed to validate phone: " << mysql_error(conn) << endl;
+								break;
+							}
+						}
+
+						string phoneValue = phoneStr.empty() ? "NULL" : ("'" + phoneStr + "'");
+						updateQuery = "UPDATE user SET PHONE = " + phoneValue + " WHERE ID = " + to_string(ID);
+						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
+						if (updated) strcpy(phone, phoneStr.empty() ? "" : phoneInput);
+						break;
+					}
+					case 3: { // Address
+						string addressInput;
+						cout << "Enter new address (leave empty to set as NULL): ";
+						getline(cin, addressInput);
+						string addressValue = addressInput.empty() ? "NULL" : ("'" + addressInput + "'");
+						updateQuery = "UPDATE user SET ADDRESS = " + addressValue + " WHERE ID = " + to_string(ID);
+						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
+						if (updated) address = addressInput.empty() ? "" : addressInput;
+						break;
+					}
+					case 4: { // Role
+						string roleInput;
+						cout << "Enter new role [donor/recipient]: ";
+						getline(cin, roleInput);
+						roleInput = toLowerCase(roleInput);
+						if (roleInput != "donor" && roleInput != "recipient") {
+							cout << "Invalid role. Must be 'donor' or 'recipient'.\n";
+							break;
+						}
+						updateQuery = "UPDATE user SET ROLE = '" + roleInput + "' WHERE ID = " + to_string(ID);
+						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
+						if (updated) role = roleInput;
+						break;
+					}
+					case 5: { // Password
+						char passwordInput[255], confirmPassword[255];
+						while (true) {
+							cout << "Enter new password: ";
+							strcpy(passwordInput, hidePasswordKeys().c_str());
+							if (strlen(passwordInput) < 6) {
+								cout << "Password must be at least 6 characters.\n";
+								continue;
+							}
+							cout << "Confirm new password: ";
+							strcpy(confirmPassword, hidePasswordKeys().c_str());
+							if (strcmp(passwordInput, confirmPassword) != 0) {
+								cout << "Passwords do not match. Please try again.\n";
+							} else {
+								break;
+							}
+						}
+						size_t hashedPassword = encrypt(passwordInput);
+						updateQuery = "UPDATE user SET PASSWORD = '" + to_string(hashedPassword) + "' WHERE ID = " + to_string(ID);
+						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
+						if (updated) strcpy(password, passwordInput);
+						break;
+					}
+					case 0:
+						cout << "Edit cancelled.\n";
+						return;
+					default:
+						cout << "Invalid choice.\n";
+						continue;
+				}
+
+				if (updated)
+					cout << "Update successful!\n";
+				else
+					cout << "Update failed: " << mysql_error(conn) << endl;
+				break;
+			}
+		}
+
+		bool deleteProfile() {// Delete function with password confirmation
+			cout << "\n--- Delete Profile ---\n";
+			cout << "Please confirm your password to delete your account: ";
+			string passwordInput = hidePasswordKeys();
+			size_t hashedPassword = encrypt(passwordInput);
+
+			// Check password
+			string checkQuery = "SELECT PASSWORD FROM user WHERE ID = " + to_string(ID);
+			int qstate = mysql_query(conn, checkQuery.c_str());
+			MYSQL_RES* res = mysql_store_result(conn);
+			bool match = false;
+			if (!qstate && res && mysql_num_rows(res) == 1) {
+				MYSQL_ROW row = mysql_fetch_row(res);
+				if (row && row[0] && to_string(hashedPassword) == string(row[0]))
+					match = true;
+			}
+			if (res) mysql_free_result(res);
+
+			if (match) {
+				string deleteQuery = "DELETE FROM user WHERE ID = " + to_string(ID);
+				qstate = mysql_query(conn, deleteQuery.c_str());
+				if (!qstate) {
+					cout << "Profile deleted successfully.\n";
+					return true;
+				}
+				cout << "Failed to delete profile: " << mysql_error(conn) << endl;
+			} else {
+				cout << "Password incorrect. Account not deleted.\n";
+			}
+			return false;
 		}
 
 		// Getter and Setter
