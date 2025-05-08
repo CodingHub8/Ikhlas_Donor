@@ -40,13 +40,12 @@ class User {
 
 			if (!qstate) {
 				res = mysql_store_result(conn);
-				if ((res != nullptr) && mysql_num_rows(res) == 1) {
+				if (res != nullptr && mysql_num_rows(res) == 1) {
 					row = mysql_fetch_row(res);
 					if (row && row[0]) {
 						setID(atoi(row[0]));
 						setName(*&row[1]);
 						setEmail(*&row[2]);
-						setPassword(*&row[3]);
 						setPhone(*&row[4] != nullptr ? *&row[4] : "N/A");
 						setAddress(row[5] != nullptr ? row[5] : "N/A");
 						setRole(row[6]);
@@ -134,7 +133,7 @@ class User {
 		        int q = mysql_query(conn, query.c_str());
 		        MYSQL_RES* res = mysql_store_result(conn);
 		        if (!q && res && mysql_num_rows(res) > 0) {
-		            cout << "Phone number already registered. Please use another phone." << endl;
+		            cout << "Phone number already registered. Please use another phone number." << endl;
 		            mysql_free_result(res);
 		            continue;
 		        }
@@ -159,16 +158,16 @@ class User {
 		    string encryptedPassword = to_string(hashedPassword);
 
 		    // Insert into DB
-		    string phoneValue = string(phoneInput).empty() ? "To be filled" : string(phoneInput);
-			string addressValue = string(addressInput).empty() ? "To be filled" : string(addressInput);
+			string phoneValue = string(phoneInput).empty() ? "NULL" : ("'" + string(phoneInput) + "'");
+			string addressValue = string(addressInput).empty() ? "NULL" : ("'" + string(addressInput) + "'");
 
 		    string insertQuery = 
 		        "INSERT INTO user (NAME, EMAIL, PASSWORD, PHONE, ADDRESS, ROLE) VALUES ('" + 
 		        string(nameInput) + "', '" +
 		        string(emailInput) + "', '" +
-		        encryptedPassword + "', '" +
-		        phoneValue + "', '" +
-		        addressValue + "', '" +
+		        encryptedPassword + "', " +
+		        phoneValue + ", " +
+		        addressValue + ", '" +
 		        roleInput + "')";
 		    int qstate = mysql_query(conn, insertQuery.c_str());
 
@@ -199,13 +198,6 @@ class User {
 		}
 		void setEmail(const char* email) {
 			strcpy(this->email, email);
-		}
-
-		const char* getPassword() const {
-			return password;
-		}
-		void setPassword(const char* password) {
-			strcpy(this->password, password);
 		}
 
 		const char* getPhone() const {

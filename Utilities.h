@@ -26,10 +26,6 @@ size_t encrypt(const string& input) {// Hash function
     return hash<string>{}(input);
 }
 
-bool verifyHash(const string& input, size_t hashedValue) {// Verify function: compares input with the hashed value
-    return encrypt(input) == hashedValue;
-}
-
 string hidePasswordKeys() {//hide password characters
     string password;
 

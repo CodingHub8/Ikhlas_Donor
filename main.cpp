@@ -54,6 +54,7 @@ void userOptions(User user) {
 	system("cls");//clear text
 	int choice;
 
+	cout << "WELCOME, " << user.getName() << "!" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	if (toLowerCase(user.getRole()) == "donor") {
 		donorOptions();
@@ -137,7 +138,30 @@ void adminMenu() {
 }
 
 void adminOptions(Admin admin) {
+	system("cls");//clear text
+	int choice;
 
+	cout << "WELCOME, " << admin.getUsername() << "!" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "------------------   ADMIN   ------------------" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "+ 1. Option 1                                 +" << endl;
+	cout << "+ 2. Option 2                                 +" << endl;
+	cout << "+ 0. Back                                     +" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
+	cout << "Please choose from the option(s) above: ";
+	input(choice);
+
+	switch(choice){
+		case 1:
+			break;
+		case 2:
+			break;
+		case 0:
+			return;//return to previous page
+		default:
+			cout << "Invalid choice. Please try again." << endl << endl;
+	}
 }
 // Admin section ends
 

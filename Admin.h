@@ -44,7 +44,6 @@ class Admin {
 						setID(atoi(row[0]));
 						setUsername(*&row[1]);
 						setEmail(*&row[2]);
-						setPassword(*&row[3]);
 						setPhone(*&row[4] != nullptr ? *&row[4] : "N/A");
 						mysql_free_result(res);
 						return true;
@@ -157,7 +156,7 @@ class Admin {
 		        qstate = mysql_query(conn, query.c_str());
 		        res = mysql_store_result(conn);
 		        if (!qstate && res && mysql_num_rows(res) > 0) {
-		            cout << "Phone number already registered. Please use another phone." << endl;
+		            cout << "Phone number already registered. Please use another phone number." << endl;
 		            mysql_free_result(res);
 		            continue;
 		        }
@@ -169,15 +168,15 @@ class Admin {
 		    size_t hashedPassword = encrypt(passwordInput);
 		    string encryptedPassword = to_string(hashedPassword);
 
-		    string phoneValue = string(phoneInput).empty() ? "To be filled" : string(phoneInput);
+			string phoneValue = string(phoneInput).empty() ? "NULL" : ("'" + string(phoneInput) + "'");
 
 			// Insert into DB
 		    string insertQuery =
 		        "INSERT INTO admin (USERNAME, EMAIL, PASSWORD, PHONE) VALUES ('" +
 		        string(nameInput) + "', '" +
 		        string(emailInput) + "', '" +
-		        encryptedPassword + "', '" +
-		        phoneValue + "')";
+		        encryptedPassword + "', " +
+		        phoneValue + ")";
 		    qstate = mysql_query(conn, insertQuery.c_str());
 
 		    if (!qstate) {
@@ -207,13 +206,6 @@ class Admin {
 		}
 		void setEmail(const char* email) {
 			strcpy(this->email, email);
-		}
-
-		const char* getPassword() const {
-			return password;
-		}
-		void setPassword(const char* password) {
-			strcpy(this->password, password);
 		}
 
 		const char* getPhone() const {
