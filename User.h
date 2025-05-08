@@ -34,7 +34,8 @@ class User {
 			string passwordInput = hidePasswordKeys();
 
 			// Validate credentials from the database
-			string query = "SELECT * FROM user WHERE EMAIL = '" + string(emailInput) + "' AND PASSWORD = '" + encryptDecrypt(passwordInput) + "'";
+			size_t hashedPassword = encrypt(passwordInput);
+			string query = "SELECT * FROM user WHERE EMAIL = '" + string(emailInput) + "' AND PASSWORD = '" + to_string(hashedPassword) + "'";
 			qstate = mysql_query(conn, query.c_str());
 
 			if (!qstate) {
@@ -153,19 +154,20 @@ class User {
 		        cout << "Invalid role. Must be 'donor' or 'recipient'." << endl;
 		    }
 
-		    // Encrypt password before storing
-		    string encryptedPassword = encryptDecrypt(passwordInput);
+		    // Hash password before storing
+		    size_t hashedPassword = encrypt(passwordInput);
+		    string encryptedPassword = to_string(hashedPassword);
 
 		    // Insert into DB
-		    string phoneValue = string(phoneInput).empty() ? "To be filled" : ("'" + string(phoneInput) + "'");
-			string addressValue = string(addressInput).empty() ? "To be filled" : ("'" + string(addressInput) + "'");
+		    string phoneValue = string(phoneInput).empty() ? "To be filled" : string(phoneInput);
+			string addressValue = string(addressInput).empty() ? "To be filled" : string(addressInput);
 
 		    string insertQuery = 
 		        "INSERT INTO user (NAME, EMAIL, PASSWORD, PHONE, ADDRESS, ROLE) VALUES ('" + 
 		        string(nameInput) + "', '" +
 		        string(emailInput) + "', '" +
-		        encryptedPassword + "', " +
-		        phoneValue + ", '" +
+		        encryptedPassword + "', '" +
+		        phoneValue + "', '" +
 		        addressValue + "', '" +
 		        roleInput + "')";
 		    int qstate = mysql_query(conn, insertQuery.c_str());

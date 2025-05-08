@@ -5,6 +5,10 @@
 using namespace std;
 
 // User section start
+void userOptions(User);
+void donorOptions();
+void recipientOptions();
+
 void userMenu(){
 	system("cls");//clear text
 
@@ -26,7 +30,7 @@ void userMenu(){
 		case 1:
 			cout << "+++++ USER LOGIN +++++" << endl << endl;
 			if(user.login()){
-				//userOptions(user);
+				userOptions(user);
 			} else {
 				cout << "Invalid login credentials" << endl;
 				system("pause");
@@ -35,6 +39,7 @@ void userMenu(){
 		case 2:
 			cout << "+++++ USER SIGN UP +++++" << endl;
 			user.signup();
+			system("pause");
 			break;
 		case 0:
 			return;//return to previous page
@@ -45,9 +50,51 @@ void userMenu(){
 	userMenu();
 }
 
+void userOptions(User user) {
+	system("cls");//clear text
+	int choice;
+
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	if (toLowerCase(user.getRole()) == "donor") {
+		donorOptions();
+	} else if (toLowerCase(user.getRole()) == "recipient") {
+		recipientOptions();
+	}
+	cout << "+ 0. Back                                     +" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
+	cout << "Please choose from the option(s) above: ";
+	input(choice);
+
+	switch(choice){
+		case 1:
+			break;
+		case 2:
+			break;
+		case 0:
+			return;//return to previous page
+		default:
+			cout << "Invalid choice. Please try again." << endl << endl;
+	}
+}
+
+void donorOptions() {
+	cout << "------------------   DONOR   ------------------" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "+ 1. Option 1                                 +" << endl;
+	cout << "+ 2. Option 2                                 +" << endl;
+}
+
+void recipientOptions() {
+	cout << "------------------ RECIPIENT ------------------" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "+ 1. Option 1                                 +" << endl;
+	cout << "+ 2. Option 2                                 +" << endl;
+}
 // User section ends
 
 // Admin section start
+void adminOptions(Admin);
+
 void adminMenu() {
 	system("cls");//clear text
 
@@ -69,7 +116,7 @@ void adminMenu() {
 		case 1:
 			cout << "+++++ ADMIN LOGIN +++++" << endl << endl;
 			if(admin.login()){
-				//adminOptions(admin);
+				adminOptions(admin);
 			} else {
 				cout << "Invalid login credentials" << endl;
 				system("pause");
@@ -78,6 +125,7 @@ void adminMenu() {
 		case 2:
 			cout << "+++++ ADMIN SIGN UP +++++" << endl;
 			admin.signup();
+			system("pause");
 			break;
 		case 0:
 			return;//return to previous page
@@ -88,7 +136,9 @@ void adminMenu() {
 	adminMenu();
 }
 
+void adminOptions(Admin admin) {
 
+}
 // Admin section ends
 
 void home() {

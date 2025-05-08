@@ -32,7 +32,8 @@ class Admin {
 			string passwordInput = hidePasswordKeys();
 
 			// Validate credentials from the database
-			string query = "SELECT * FROM admin WHERE USERNAME = '" + string(input) + "' OR EMAIL = '" + string(input) + "' AND PASSWORD = '" + encryptDecrypt(passwordInput) + "'";
+			size_t hashedPassword = encrypt(passwordInput);
+			string query = "SELECT * FROM admin WHERE (USERNAME = '" + string(input) + "' OR EMAIL = '" + string(input) + "') AND PASSWORD = '" + to_string(hashedPassword) + "'";
 			qstate = mysql_query(conn, query.c_str());
 
 			if (!qstate) {
@@ -76,17 +77,30 @@ class Admin {
 			    mysql_free_result(res);
 			}
 
-		    cout << "Enter your full name: ";
-		    cin.getline(nameInput, 100);
+			while (true) {// Uniqueness check for username
+				cout << "Enter your username: ";
+				cin.getline(nameInput, 100);
 
-		    // Validate name not empty
-		    while (strlen(nameInput) == 0) {
-		        cout << "Name cannot be empty. Please re-enter: ";
-		        cin.getline(nameInput, 100);
-		    }
+				// Validate name not empty
+				if (strlen(nameInput) == 0) {
+					cout << "Username cannot be empty. Please re-enter: ";
+					continue;
+				}
 
-		    // Email entry and uniqueness check
-		    while (true) {
+				// Uniqueness check for username
+				string usernameQuery = "SELECT * FROM admin WHERE USERNAME = '" + string(nameInput) + "'";
+				qstate = mysql_query(conn, usernameQuery.c_str());
+				res = mysql_store_result(conn);
+				if (!qstate && res && mysql_num_rows(res) > 0) {
+					cout << "Username already taken. Please choose another username." << endl;
+					mysql_free_result(res);
+					continue;
+				}
+				if (res) mysql_free_result(res);
+				break;
+			}
+
+		    while (true) {// Email entry and uniqueness check
 		        cout << "Enter your email: ";
 		        cin.getline(emailInput, 100);
 
@@ -125,8 +139,7 @@ class Admin {
 		        }
 		    }
 
-		    // Phone validation and uniqueness check
-		    while (true) {
+		    while (true) {// Phone validation and uniqueness check
 		        cout << "Enter your phone number (leave empty if none): ";
 		        cin.getline(phoneInput, 20);
 		        string phoneStr = phoneInput;
@@ -152,18 +165,19 @@ class Admin {
 		        break;
 		    }
 
-		    // Encrypt password before storing
-		    string encryptedPassword = encryptDecrypt(passwordInput);
+		    // Hash password before storing
+		    size_t hashedPassword = encrypt(passwordInput);
+		    string encryptedPassword = to_string(hashedPassword);
 
-		    // Insert into DB
-		    string phoneValue = string(phoneInput).empty() ? "To be filled" : ("'" + string(phoneInput) + "'");
-			
+		    string phoneValue = string(phoneInput).empty() ? "To be filled" : string(phoneInput);
+
+			// Insert into DB
 		    string insertQuery =
-		        "INSERT INTO admin (NAME, EMAIL, PASSWORD, PHONE) VALUES ('" +
+		        "INSERT INTO admin (USERNAME, EMAIL, PASSWORD, PHONE) VALUES ('" +
 		        string(nameInput) + "', '" +
 		        string(emailInput) + "', '" +
-		        encryptedPassword + "', " +
-		        phoneValue + ")";
+		        encryptedPassword + "', '" +
+		        phoneValue + "')";
 		    qstate = mysql_query(conn, insertQuery.c_str());
 
 		    if (!qstate) {

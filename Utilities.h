@@ -10,7 +10,7 @@ using namespace std;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
-string encryptDecrypt(const string& data) {//encrypt and decrypt data using simple hashing
+string encryptDecrypt(const string& data) {//encrypt and decrypt data using XOR Cipher
     string result = data;
     const char key = 'K';
 
@@ -21,6 +21,14 @@ string encryptDecrypt(const string& data) {//encrypt and decrypt data using simp
     return result;
 }
 #pragma clang diagnostic pop
+
+size_t encrypt(const string& input) {// Hash function
+    return hash<string>{}(input);
+}
+
+bool verifyHash(const string& input, size_t hashedValue) {// Verify function: compares input with the hashed value
+    return encrypt(input) == hashedValue;
+}
 
 string hidePasswordKeys() {//hide password characters
     string password;
