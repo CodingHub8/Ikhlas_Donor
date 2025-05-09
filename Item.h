@@ -57,16 +57,16 @@ class Item {
 
 			switch (catCode) {
 				case 'F':
-					strcpy(category, "food");
+					strcpy(category, "Food");
 					break;
 				case 'C':
-					strcpy(category, "clothing");
+					strcpy(category, "Clothing");
 					break;
 				case 'T':
-					strcpy(category, "toy");
+					strcpy(category, "Toy");
 					break;
 				case 'M':
-					strcpy(category, "money");
+					strcpy(category, "Money");
 					break;
 			}
 

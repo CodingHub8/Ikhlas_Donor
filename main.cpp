@@ -6,7 +6,7 @@
 using namespace std;
 
 // Item section start
-void itemOptions(User& user) {
+void itemManagement(User& user) {
 	system("cls");//clear text
 	int choice;
 	Item item;
@@ -20,7 +20,7 @@ void itemOptions(User& user) {
 	cout << "+ 0. Back                                +" << endl;
 	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
-	input(choice);
+	inputint(choice);
 
 	switch(choice){
 		case 1:
@@ -48,8 +48,8 @@ void itemOptions(User& user) {
 
 // User section start
 void userOptions(User&);
-void donorOptions();
-void recipientOptions();
+void donorOptions(User&);
+void recipientOptions(User&);
 
 void userMenu(){
 	system("cls");//clear text
@@ -66,7 +66,7 @@ void userMenu(){
 	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
 
-	input(choice);
+	inputint(choice);
 
 	switch(choice){
 		case 1:
@@ -94,36 +94,36 @@ void userMenu(){
 
 void userOptions(User& user) {
 	system("cls");//clear text
-	int choice;
 
 	cout << "WELCOME, " << user.getName() << "!" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	if (toLowerCase(user.getRole()) == "donor") {
-		donorOptions();
+		donorOptions(user);
 	} else if (toLowerCase(user.getRole()) == "recipient") {
-		recipientOptions();
+		recipientOptions(user);
 	}
+}
+
+void donorOptions(User& user) {
+	int choice;
+	cout << "------------------   DONOR   ------------------" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "+ 1. Item Management                          +" << endl;
+	cout << "+ 2. Option 2                                 +" << endl;
 	cout << "+ 3. Edit Profile                             +" << endl;
 	cout << "+ 4. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
-	input(choice);
+	inputint(choice);
 
 	switch(choice){
 		case 1:
-			if (user.getRole() == "donor") {
-				itemOptions(user);
-			} else if (user.getRole() == "recipient") {
-
-			}
+			system("cls");//clear text
+			itemManagement(user);
 			break;
 		case 2:
-			if (user.getRole() == "donor") {
-
-			} else if (user.getRole() == "recipient") {
-
-			}
+			//some donor function
 			break;
 		case 3:
 			system("cls");//clear text
@@ -140,22 +140,44 @@ void userOptions(User& user) {
 		default:
 			cout << "Invalid choice. Please try again." << endl << endl;
 	}
-
-	userOptions(user);
 }
 
-void donorOptions() {
-	cout << "------------------   DONOR   ------------------" << endl;
-	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-	cout << "+ 1. Add Item                                 +" << endl;
-	cout << "+ 2. Option 2                                 +" << endl;
-}
-
-void recipientOptions() {
+void recipientOptions(User& user) {
+	int choice;
 	cout << "------------------ RECIPIENT ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Option 1                                 +" << endl;
 	cout << "+ 2. Option 2                                 +" << endl;
+	cout << "+ 3. Edit Profile                             +" << endl;
+	cout << "+ 4. Delete Profile                           +" << endl;
+	cout << "+ 0. Back                                     +" << endl;
+	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
+	cout << "Please choose from the option(s) above: ";
+	inputint(choice);
+
+	switch(choice){
+		case 1:
+			system("cls");//clear text
+			//some recipient function
+			break;
+		case 2:
+			//some recipient function
+			break;
+		case 3:
+			system("cls");//clear text
+			user.editProfile();
+			break;
+		case 4:
+			system("cls");//clear text
+			if (user.deleteProfile()) {
+				userMenu();
+			}
+			break;
+		case 0:
+			return;//return to previous page
+		default:
+			cout << "Invalid choice. Please try again." << endl << endl;
+	}
 }
 // User section ends
 
@@ -177,7 +199,7 @@ void adminMenu() {
 	cout << "+++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
 
-	input(choice);
+	inputint(choice);
 
 	switch(choice){
 		case 1:
@@ -218,7 +240,7 @@ void adminOptions(Admin admin) {
 	cout << "+ 0. Back                                     +" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
-	input(choice);
+	inputint(choice);
 
 	switch(choice){
 		case 1:
@@ -266,7 +288,7 @@ int main() {
 
 	do{
 		home();
-		input(choice);
+		inputint(choice);
 
 		switch(choice){
 			case 1://user

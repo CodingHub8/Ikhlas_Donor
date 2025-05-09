@@ -141,7 +141,7 @@ string formatPhone(const string &phone) {
     return formattedPhone;
 }
 
-int input(int &inp){//integer input validation
+int inputint(int &inp){//integer input validation
 	while(true){// Check if input is an integer
 		if(cin >> inp){// Check for remaining characters in the input buffer
 			if(cin.peek() == '\n'){

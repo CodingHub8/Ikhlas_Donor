@@ -189,7 +189,7 @@ class User {
 				cout << "0. Cancel\n";
 				cout << "Select the field you want to update [0-5]: ";
 				int choice;
-				input(choice);
+				inputint(choice);
 				string updateQuery;
 				bool updated = false;
 

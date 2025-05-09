@@ -53,7 +53,7 @@ public:
             {"EMAIL", "VARCHAR", 100, "UNIQUE NOT NULL"},
             {"PASSWORD", "VARCHAR", 255, "NOT NULL"},
             {"PHONE", "VARCHAR", 20, "UNIQUE"},
-            {"ADDRESS", "TEXT", 0, ""},
+            {"ADDRESS", "TEXT", 0, "DEFAULT NULL"},
             {"ROLE", "ENUM('donor', 'recipient')", 0, "NOT NULL DEFAULT 'recipient'"}
         };
 
@@ -68,6 +68,18 @@ public:
         };
 
         createTable("admin", adminTable);
+
+        vector<Column> itemTable = {
+            {"ID", "VARCHAR", 10, "PRIMARY KEY"},
+            {"DONORID", "INT", 10, "FOREIGN KEY REFERENCES user(ID) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL"},
+            {"NAME", "VARCHAR", 100, "NOT NULL"},
+            {"AMOUNT", "INT", 15, "NOT NULL DEFAULT 1"},
+            {"CATEGORY", "ENUM('Food', 'Clothing', 'Toy', 'Money')", 0, "DEFAULT NULL"},
+            {"DESCRIPTION", "TEXT", 0, "DEFAULT NULL"},
+            {"DATEADDED", "DATETIME", 0, "NOT NULL"}
+        };
+
+        createTable("item", itemTable);
     }
 
     static void createTable(const string& tableName, const vector<Column>& columns) {
