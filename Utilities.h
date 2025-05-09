@@ -65,21 +65,58 @@ string toLowerCase(const string& str) {
     return result;
 }
 
-const string currentDateTime() {
+const string currentDateTime() {// YYYY-MM-DD HH:MM:SS format
     time_t now = time(nullptr);
     tm tstruct;
-    char buf[20];
+    char buf[20]; // Enough for "YYYY-MM-DD HH:MM:SS" + null terminator
     tstruct = *localtime(&now);
-    strftime(buf, sizeof(buf), "%d-%m-%Y %H:%M:%S", &tstruct);
-    return buf;
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tstruct);
+    return string(buf);
 }
 
-bool isValidDate(const string& date) {// Function to validate date format (DD-MM-YYYY)
-    // Define the regular expression for the "DD-MM-YYYY" format
-    regex dateFormat("^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\\d{4}$");
+bool isFutureDate(const string& date) {
+    int year, month, day;
+    if (sscanf(date.c_str(), "%d-%d-%d", &year, &month, &day) != 3) return false;
 
-    // Check if the date matches the regular expression
-    return regex_match(date, dateFormat);
+    time_t t = time(nullptr);
+    tm* now = localtime(&t);
+    if (!now) return false;
+
+    // Convert today to YYYY-MM-DD
+    int currYear = now->tm_year + 1900;
+    int currMonth = now->tm_mon + 1;
+    int currDay = now->tm_mday;
+
+    if (year > currYear) return true;
+    if (year == currYear && month > currMonth) return true;
+    if (year == currYear && month == currMonth && day > currDay) return true;
+    return false;
+}
+
+bool isValidDate(const string& date) {// YYYY-MM-DD format
+    // Check format
+    regex dateFormat("^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$");
+
+    smatch match;
+    if (!regex_match(date, match, dateFormat)) {
+        return false;
+    }
+
+    // Extract day, month, year
+    int day, month, year;
+    sscanf(date.c_str(), "%d-%d-%d", &year, &month, &day);
+
+    // Days in month
+    int daysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    // Leap year check
+    bool isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    if (month == 2 && isLeap) {
+        daysInMonth[1] = 29;
+    }
+
+    // Check actual day range
+    return day <= daysInMonth[month - 1];
 }
 
 bool isValidTime(const string &time) {// Function to validate time format (HH:MM:SS)

@@ -6,7 +6,7 @@ using namespace std;
 class Item {
 	private:
 		char ID[10];//Have different formats per category (e.g., F001, C001, T001, M001)
-		int donorID;
+		char donorID[10];
 		char name[100];
 		int amount;
 		char category[100];// food, clothing, toy, money
@@ -14,9 +14,10 @@ class Item {
 		string dateAdded;//auto generated
 
 	public:
-		Item(char* ID, const int& donorID, char* name, const int& amount, char* category, char* description, const string& dateAdded) :
-			donorID(donorID), amount(amount), dateAdded(dateAdded) {
+		Item(char* ID, char* donorID, char* name, const int& amount, char* category, char* description, const string& dateAdded) :
+		amount(amount), dateAdded(dateAdded) {
 			strcpy(this->ID, ID);
+			strcpy(this->donorID, donorID);
 			strcpy(this->name, name);
 			strcpy(this->category, category);
 			strcpy(this->description, description);
@@ -25,13 +26,13 @@ class Item {
 		Item() = default;// Default constructor
 
 		bool addItem(User& user) {
-			donorID = user.getID();
+			strcpy(donorID, user.getID());// Copy donor ID to item ID
 
 			cout << "Enter item name: ";
-			cin.getline(name, 100);
+			cin.getline(name, 100, '\n');
 			while (strlen(name) == 0) {// Validate name not empty
 				cout << "Name cannot be empty. Please re-enter: ";
-				cin.getline(name, 100);
+				cin.getline(name, 100, '\n');
 			}
 
 			cout << "Enter item amount: ";
@@ -42,55 +43,54 @@ class Item {
 			}
 
 			char catCode;
-			cout << "Enter item category" << endl;
+			cout << "----- Item categories -----" << endl;
 			cout << "[F]ood" << endl;
 			cout << "[C]lothing" << endl;
 			cout << "[T]oy" << endl;
 			cout << "[M]oney" << endl;
 			cout << "Enter category code: ";
 			cin >> catCode;
-			toUpperCase(to_string(catCode)); // Convert to lowercase for consistency
+			catCode = toupper(catCode); // Convert to uppercase for consistency
 			if (catCode != 'F' && catCode != 'C' && catCode != 'T' && catCode != 'M') {
 				catCode = 'X';
 				strcpy(category, "unknown");
 			}
 
 			switch (catCode) {
-				case 'F':
-					strcpy(category, "Food");
-					break;
-				case 'C':
-					strcpy(category, "Clothing");
-					break;
-				case 'T':
-					strcpy(category, "Toy");
-					break;
-				case 'M':
-					strcpy(category, "Money");
-					break;
+				case 'F': strcpy(category, "Food"); break;
+				case 'C': strcpy(category, "Clothing"); break;
+				case 'T': strcpy(category, "Toy"); break;
+				case 'M': strcpy(category, "Money"); break;
 			}
 
 			if (catCode == 'F') {//Food category must have expiry date
-				cout << "Enter expiry date (DD-MM-YYYY): ";
-				cin.getline(description, 255);
-				while (strlen(description) == 0 || isValidDate(description)) {
-					cout << "Invalid expiry date. Please re-enter: ";
-					cin.getline(description, 255);
-				}
+				cout << "Enter expiry date (YYYY-MM-DD): ";
+				cin.ignore();
+				cin.getline(description, 255, '\n');
+				while (strlen(description) == 0 || !isValidDate(description) || !isFutureDate(description)) {
+                    cout << "Invalid expiry date. Please re-enter: ";
+                    cin.getline(description, 255, '\n');
+                }
+				// Prepend "Best Before: " to the description
+				string expiryStr = "Best Before: ";
+				expiryStr += description;
+				strncpy(description, expiryStr.c_str(), 254);
+				description[254] = '\0'; // Ensure null-termination
 			} else {
 				cout << "Enter item description (Leave empty if none): ";
-				cin.getline(description, 255);
+				cin.ignore();
+				cin.getline(description, 255, '\n');
 			}
 
 			dateAdded = currentDateTime();
 
 			string query = "INSERT INTO item (ID, DONORID, NAME, AMOUNT, CATEGORY, DESCRIPTION, DATEADDED) VALUES ('" +
-				   string(generateID(catCode)) + "'," +
-				   to_string(donorID) + ",'" +
-				   string(name) + "'," +
-				   to_string(amount) + ",'" +
-				   string(description) + "','" +
-				   string(category) + "','" +
+				   generateID(catCode) + "', '" +
+				   string(donorID) + "', '" +
+				   string(name) + "', " +
+				   to_string(amount) + ", '" +
+				   string(category) + "', '" +
+				   string(description) + "', '" +
 				   dateAdded + "')";
 			return mysql_query(conn, query.c_str()) == 0;
 		}
@@ -115,8 +115,7 @@ class Item {
 			int lastNumber = 0;
 			if (res && mysql_num_rows(res) > 0) {
 				row = mysql_fetch_row(res);
-				if (row && row[0]) {
-					// Example: row[0] == "F004" (skip the leading category char)
+				if (row && row[0]) {// Example: row[0] == "F004" (skip the leading category char)
 					string lastId(row[0]);
 					if (lastId.length() >= 4) {
 						lastNumber = stoi(lastId.substr(1)); // Get numeric part
@@ -131,11 +130,11 @@ class Item {
 			return ss.str(); // e.g., F005
 		}
 
-		int getDonorId() const {
+		const char* getDonorId() const {
 			return donorID;
 		}
-		void setDonorID(int donorID) {
-			this->donorID = donorID;
+		void setDonorID(const char* donorID) {
+			strcpy(this->donorID, donorID);
 		}
 
 		const char* getName() const {
@@ -155,7 +154,7 @@ class Item {
 		const char* getCategory() const {
 			return category;
 		}
-		void setCategory(char * category) {
+		void setCategory(const char* category) {
 			strcpy(this->category, category);
 		}
 

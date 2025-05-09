@@ -7,6 +7,7 @@ using namespace std;
 
 // Item section start
 void itemManagement(User& user) {
+	system("pause");
 	system("cls");//clear text
 	int choice;
 	Item item;
@@ -24,7 +25,11 @@ void itemManagement(User& user) {
 
 	switch(choice){
 		case 1:
-			item.addItem(user);
+			if (item.addItem(user)) {
+				cout << "Item added successfully!" << endl;
+			} else {
+				cout << "Failed to add item. Please try again." << endl;
+			}
 			break;
 		case 2:
 			break;
@@ -36,11 +41,11 @@ void itemManagement(User& user) {
 			system("cls");//clear text
 
 			break;
-		case 0:
-			return;//return to previous page
-		default:
-			cout << "Invalid choice. Please try again." << endl << endl;
+		case 0: return;//return to previous page
+		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
+
+	itemManagement(user);
 }
 
 
@@ -135,10 +140,8 @@ void donorOptions(User& user) {
 				userMenu();
 			}
 			break;
-		case 0:
-			return;//return to previous page
-		default:
-			cout << "Invalid choice. Please try again." << endl << endl;
+		case 0: return;//return to previous page
+		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 }
 
@@ -173,10 +176,8 @@ void recipientOptions(User& user) {
 				userMenu();
 			}
 			break;
-		case 0:
-			return;//return to previous page
-		default:
-			cout << "Invalid choice. Please try again." << endl << endl;
+		case 0: return;//return to previous page
+		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 }
 // User section ends
@@ -216,10 +217,8 @@ void adminMenu() {
 			admin.signup();
 			system("pause");
 			break;
-		case 0:
-			return;//return to previous page
-		default:
-			cout << "Invalid choice. Please try again." << endl << endl;
+		case 0: return;//return to previous page
+		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 
 	adminMenu();
@@ -257,10 +256,8 @@ void adminOptions(Admin admin) {
 				adminMenu();
 			}
 			break;
-		case 0:
-			return;//return to previous page
-		default:
-			cout << "Invalid choice. Please try again." << endl << endl;
+		case 0: return;//return to previous page
+		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 
 	adminOptions(admin);
@@ -302,8 +299,7 @@ int main() {
 				mysql_close(conn);
 				system("pause");
 				exit(0);
-			default:
-				cout << "Invalid choice. Please try again." << endl << endl;
+			default: cout << "Invalid choice. Please try again." << endl << endl;
 		}
 	}while(true);
 }

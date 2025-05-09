@@ -1,11 +1,12 @@
 #ifndef USERS_H
 #define USERS_H
 #include <iostream>
+#include <string>
 using namespace std;
 
 class User {
 	private:
-		int ID;
+		char ID[10]; // Donor = D00X, Recipient = R00X
 		char name[100];     // individual or company name
 		char email[100];    // unique for login purpose
 		char password[255]; // hashed
@@ -15,8 +16,9 @@ class User {
 		
 	public:
 		// Parameterized constructor
-		User(const int& ID, const char* name, const char* email, const char* password, const char* phone, const string& address, const string& role) :
-		      ID(ID), address(address), role(role) {
+		User(const char* ID, const char* name, const char* email, const char* password, const char* phone, const string& address, const string& role) :
+		      address(address), role(role) {
+			strcpy(this->ID, ID);
 		    strcpy(this->name, name);
 		    strcpy(this->email, email);
 		    strcpy(this->password, password);
@@ -43,7 +45,7 @@ class User {
 				if (res != nullptr && mysql_num_rows(res) == 1) {
 					row = mysql_fetch_row(res);
 					if (row && row[0]) {
-						setID(atoi(row[0]));
+						setID(*&row[0]);
 						setName(*&row[1]);
 						setEmail(*&row[2]);
 						setPhone(*&row[4] != nullptr ? *&row[4] : "N/A");
@@ -66,18 +68,18 @@ class User {
 		    string addressInput, roleInput;
 
 		    cout << "Enter your full name: ";
-		    cin.getline(nameInput, 100);
+		    cin.getline(nameInput, 100, '\n');
 
 		    // Validate name not empty
 		    while (strlen(nameInput) == 0) {
 		        cout << "Name cannot be empty. Please re-enter: ";
-		        cin.getline(nameInput, 100);
+		        cin.getline(nameInput, 100, '\n');
 		    }
 
 		    // Email entry and uniqueness check
 		    while (true) {
 		        cout << "Enter your email: ";
-		        cin.getline(emailInput, 100);
+		        cin.getline(emailInput, 100, '\n');
 
 		        if (!isValidEmail(emailInput)) {
 		            cout << "Invalid email format. Please try again." << endl;
@@ -87,7 +89,7 @@ class User {
 		        // Uniqueness check
 		        string query = "SELECT * FROM user WHERE EMAIL = '" + string(emailInput) + "'";
 		        int q = mysql_query(conn, query.c_str());
-		        MYSQL_RES* res = mysql_store_result(conn);
+		        res = mysql_store_result(conn);
 		        if (!q && res && mysql_num_rows(res) > 0) {
 		            cout << "Email already registered. Please use another email." << endl;
 		            mysql_free_result(res);
@@ -117,7 +119,7 @@ class User {
 		    // Phone validation and uniqueness check
 		    while (true) {
 		        cout << "Enter your phone number (leave empty if none): ";
-		        cin.getline(phoneInput, 20);
+		        cin.getline(phoneInput, 20, '\n');
 		        string phoneStr = phoneInput;
 
 		        // Allow empty input
@@ -131,7 +133,7 @@ class User {
 		        }
 		        string query = "SELECT * FROM user WHERE PHONE = '" + phoneStr + "'";
 		        int q = mysql_query(conn, query.c_str());
-		        MYSQL_RES* res = mysql_store_result(conn);
+		        res = mysql_store_result(conn);
 		        if (!q && res && mysql_num_rows(res) > 0) {
 		            cout << "Phone number already registered. Please use another phone number." << endl;
 		            mysql_free_result(res);
@@ -152,6 +154,9 @@ class User {
 		        if (roleInput == "donor" || roleInput == "recipient") break;
 		        cout << "Invalid role. Must be 'donor' or 'recipient'." << endl;
 		    }
+			char roleCode;
+			if (roleInput == "recipient") roleCode = 'R';
+			else roleCode = 'D';// Default to donor
 
 		    // Hash password before storing
 		    size_t hashedPassword = encrypt(passwordInput);
@@ -162,7 +167,8 @@ class User {
 			string addressValue = string(addressInput).empty() ? "NULL" : ("'" + string(addressInput) + "'");
 
 		    string insertQuery = 
-		        "INSERT INTO user (NAME, EMAIL, PASSWORD, PHONE, ADDRESS, ROLE) VALUES ('" + 
+		        "INSERT INTO user (ID, NAME, EMAIL, PASSWORD, PHONE, ADDRESS, ROLE) VALUES ('" +
+		        generateID(roleCode) + "', '" +
 		        string(nameInput) + "', '" +
 		        string(emailInput) + "', '" +
 		        encryptedPassword + "', " +
@@ -184,8 +190,7 @@ class User {
 				cout << "1. Name (" << name << ")\n";
 				cout << "2. Phone (" << phone << ")\n";
 				cout << "3. Address (" << address << ")\n";
-				cout << "4. Role (" << role << ")\n";
-				cout << "5. Password\n";
+				cout << "4. Password\n";
 				cout << "0. Cancel\n";
 				cout << "Select the field you want to update [0-5]: ";
 				int choice;
@@ -197,9 +202,9 @@ class User {
 					case 1: { // Name
 						char nameInput[100];
 						cout << "Enter new name: ";
-						cin.getline(nameInput, 100);
+						cin.getline(nameInput, 100, '\n');
 						if (strlen(nameInput) == 0) { cout << "Name cannot be empty.\n"; break; }
-						updateQuery = "UPDATE user SET NAME = '" + string(nameInput) + "' WHERE ID = " + to_string(ID);
+						updateQuery = "UPDATE user SET NAME = '" + string(nameInput) + "' WHERE ID = '" + string(ID) + "'";
 						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
 						if (updated) strcpy(name, nameInput);
 						break;
@@ -207,14 +212,14 @@ class User {
 					case 2: { // Phone
 						char phoneInput[20];
 						cout << "Enter new phone (leave empty to set as NULL): ";
-						cin.getline(phoneInput, 20);
+						cin.getline(phoneInput, 20, '\n');
 
 						string phoneStr = phoneInput; // For usage below
 						if (!phoneStr.empty()) {
 							// Check if phone already exists for another user
-							string checkPhoneQuery = "SELECT ID FROM user WHERE PHONE = '" + phoneStr + "' AND ID != " + to_string(ID);
+							string checkPhoneQuery = "SELECT ID FROM user WHERE PHONE = '" + phoneStr + "' AND ID != '" + string(ID) + "'";
 							if (mysql_query(conn, checkPhoneQuery.c_str()) == 0) {
-								MYSQL_RES* res = mysql_store_result(conn);
+								res = mysql_store_result(conn);
 								if (res && mysql_num_rows(res) > 0) {
 									cout << "This phone number is already in use by another account.\n";
 									mysql_free_result(res);
@@ -228,7 +233,7 @@ class User {
 						}
 
 						string phoneValue = phoneStr.empty() ? "NULL" : ("'" + phoneStr + "'");
-						updateQuery = "UPDATE user SET PHONE = " + phoneValue + " WHERE ID = " + to_string(ID);
+						updateQuery = "UPDATE user SET PHONE = " + phoneValue + " WHERE ID = '" + string(ID) + "'";
 						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
 						if (updated) strcpy(phone, phoneStr.empty() ? "" : phoneInput);
 						break;
@@ -238,26 +243,12 @@ class User {
 						cout << "Enter new address (leave empty to set as NULL): ";
 						getline(cin, addressInput);
 						string addressValue = addressInput.empty() ? "NULL" : ("'" + addressInput + "'");
-						updateQuery = "UPDATE user SET ADDRESS = " + addressValue + " WHERE ID = " + to_string(ID);
+						updateQuery = "UPDATE user SET ADDRESS = " + addressValue + " WHERE ID = '" + string(ID) + "'";
 						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
 						if (updated) address = addressInput.empty() ? "" : addressInput;
 						break;
 					}
-					case 4: { // Role
-						string roleInput;
-						cout << "Enter new role [donor/recipient]: ";
-						getline(cin, roleInput);
-						roleInput = toLowerCase(roleInput);
-						if (roleInput != "donor" && roleInput != "recipient") {
-							cout << "Invalid role. Must be 'donor' or 'recipient'.\n";
-							break;
-						}
-						updateQuery = "UPDATE user SET ROLE = '" + roleInput + "' WHERE ID = " + to_string(ID);
-						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
-						if (updated) role = roleInput;
-						break;
-					}
-					case 5: { // Password
+					case 4: { // Password
 						char passwordInput[255], confirmPassword[255];
 						while (true) {
 							cout << "Enter new password: ";
@@ -275,7 +266,7 @@ class User {
 							}
 						}
 						size_t hashedPassword = encrypt(passwordInput);
-						updateQuery = "UPDATE user SET PASSWORD = '" + to_string(hashedPassword) + "' WHERE ID = " + to_string(ID);
+						updateQuery = "UPDATE user SET PASSWORD = '" + to_string(hashedPassword) + "' WHERE ID = '" + string(ID) + "'";
 						updated = (mysql_query(conn, updateQuery.c_str()) == 0);
 						if (updated) strcpy(password, passwordInput);
 						break;
@@ -303,19 +294,19 @@ class User {
 			size_t hashedPassword = encrypt(passwordInput);
 
 			// Check password
-			string checkQuery = "SELECT PASSWORD FROM user WHERE ID = " + to_string(ID);
+			string checkQuery = "SELECT PASSWORD FROM user WHERE ID = '" + string(ID) + "'";
 			int qstate = mysql_query(conn, checkQuery.c_str());
-			MYSQL_RES* res = mysql_store_result(conn);
+			res = mysql_store_result(conn);
 			bool match = false;
 			if (!qstate && res && mysql_num_rows(res) == 1) {
-				MYSQL_ROW row = mysql_fetch_row(res);
+				row = mysql_fetch_row(res);
 				if (row && row[0] && to_string(hashedPassword) == string(row[0]))
 					match = true;
 			}
 			if (res) mysql_free_result(res);
 
 			if (match) {
-				string deleteQuery = "DELETE FROM user WHERE ID = " + to_string(ID);
+				string deleteQuery = "DELETE FROM user WHERE ID = '" + string(ID) + "'";
 				qstate = mysql_query(conn, deleteQuery.c_str());
 				if (!qstate) {
 					cout << "Profile deleted successfully.\n";
@@ -329,11 +320,35 @@ class User {
 		}
 
 		// Getter and Setter
-		int getID() const {
+		const char* getID() const {
 			return ID;
 		}
-		void setID(int ID) {
-			this->ID = ID;
+		void setID(const char* ID) {
+			strcpy(this->ID, ID);
+		}
+		string generateID(char roleCode) {
+			string query = "SELECT ID FROM user WHERE ID LIKE '" + string(1, roleCode) + "%' ORDER BY ID DESC LIMIT 1";
+			if (mysql_query(conn, query.c_str()) != 0) {// Error with query
+				return "";
+			}
+
+			res = mysql_store_result(conn);
+			int lastNumber = 0;
+			if (res && mysql_num_rows(res) > 0) {
+				row = mysql_fetch_row(res);
+				if (row && row[0]) {// Example: row[0] == "R004" (skip the leading category char)
+					string lastId(row[0]);
+					if (lastId.length() >= 4) {
+						lastNumber = stoi(lastId.substr(1)); // Get numeric part
+					}
+				}
+			}
+			if (res) mysql_free_result(res);
+
+			int nextNumber = lastNumber + 1;
+			stringstream ss;
+			ss << roleCode << setw(3) << setfill('0') << nextNumber;
+			return ss.str(); // e.g., R005, D001
 		}
 
 		const char* getName() const {

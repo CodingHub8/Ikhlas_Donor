@@ -78,7 +78,7 @@ class Admin {
 
 			while (true) {// Uniqueness check for username
 				cout << "Enter your username: ";
-				cin.getline(nameInput, 100);
+				cin.getline(nameInput, 100, '\n');
 
 				// Validate name not empty
 				if (strlen(nameInput) == 0) {
@@ -101,7 +101,7 @@ class Admin {
 
 		    while (true) {// Email entry and uniqueness check
 		        cout << "Enter your email: ";
-		        cin.getline(emailInput, 100);
+		        cin.getline(emailInput, 100, '\n');
 
 		        if (!isValidEmail(emailInput)) {
 		            cout << "Invalid email format. Please try again." << endl;
@@ -140,7 +140,7 @@ class Admin {
 
 		    while (true) {// Phone validation and uniqueness check
 		        cout << "Enter your phone number (leave empty if none): ";
-		        cin.getline(phoneInput, 20);
+		        cin.getline(phoneInput, 20, '\n');
 		        string phoneStr = phoneInput;
 
 		        // Allow empty input
@@ -225,14 +225,14 @@ class Admin {
 					case 2: { // Phone
 						char phoneInput[20];
 						cout << "Enter new phone (leave empty to set as NULL): ";
-						cin.getline(phoneInput, 20);
+						cin.getline(phoneInput, 20, '\n');
 
 						string phoneStr = phoneInput; // For usage below
 						if (!phoneStr.empty()) {
 							// Check if phone already exists for another admin
 							string checkPhoneQuery = "SELECT ID FROM admin WHERE PHONE = '" + phoneStr + "' AND ID != " + to_string(ID);
 							if (mysql_query(conn, checkPhoneQuery.c_str()) == 0) {
-								MYSQL_RES* res = mysql_store_result(conn);
+								res = mysql_store_result(conn);
 								if (res && mysql_num_rows(res) > 0) {
 									cout << "This phone number is already in use by another account.\n";
 									mysql_free_result(res);
