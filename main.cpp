@@ -2,10 +2,52 @@
 #include "DBConnection.h"
 #include "User.h"
 #include "Admin.h"
+#include "Item.h"
 using namespace std;
 
+// Item section start
+void itemOptions(User& user) {
+	system("cls");//clear text
+	int choice;
+	Item item;
+
+	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "------------------ ITEM ------------------" << endl;
+	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "+ 1. Add Item                            +" << endl;
+	cout << "+ 2. Edit Item                           +" << endl;
+	cout << "+ 3. Delete Item                         +" << endl;
+	cout << "+ 0. Back                                +" << endl;
+	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
+	cout << "Please choose from the option(s) above: ";
+	input(choice);
+
+	switch(choice){
+		case 1:
+			item.addItem(user);
+			break;
+		case 2:
+			break;
+		case 3:
+			system("cls");//clear text
+
+			break;
+		case 4:
+			system("cls");//clear text
+
+			break;
+		case 0:
+			return;//return to previous page
+		default:
+			cout << "Invalid choice. Please try again." << endl << endl;
+	}
+}
+
+
+// Item section ends
+
 // User section start
-void userOptions(User);
+void userOptions(User&);
 void donorOptions();
 void recipientOptions();
 
@@ -50,7 +92,7 @@ void userMenu(){
 	userMenu();
 }
 
-void userOptions(User user) {
+void userOptions(User& user) {
 	system("cls");//clear text
 	int choice;
 
@@ -70,8 +112,18 @@ void userOptions(User user) {
 
 	switch(choice){
 		case 1:
+			if (user.getRole() == "donor") {
+				itemOptions(user);
+			} else if (user.getRole() == "recipient") {
+
+			}
 			break;
 		case 2:
+			if (user.getRole() == "donor") {
+
+			} else if (user.getRole() == "recipient") {
+
+			}
 			break;
 		case 3:
 			system("cls");//clear text
@@ -95,7 +147,7 @@ void userOptions(User user) {
 void donorOptions() {
 	cout << "------------------   DONOR   ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-	cout << "+ 1. Option 1                                 +" << endl;
+	cout << "+ 1. Add Item                                 +" << endl;
 	cout << "+ 2. Option 2                                 +" << endl;
 }
 

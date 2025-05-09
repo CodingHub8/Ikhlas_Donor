@@ -1,5 +1,8 @@
 #include <iostream>
 #include <conio.h>
+#include <stdio.h>
+#include <time.h>
+#include <ctime>
 #include <iomanip>
 #include <sstream>
 #include <regex>
@@ -62,9 +65,18 @@ string toLowerCase(const string& str) {
     return result;
 }
 
-bool isValidDate(const string& date) {// Function to validate date format (YYYY-MM-DD)
-    // Define the regular expression for the "YYYY-MM-DD" format
-    regex dateFormat("^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\\d{4}$");
+const string currentDateTime() {
+    time_t now = time(nullptr);
+    tm tstruct;
+    char buf[20];
+    tstruct = *localtime(&now);
+    strftime(buf, sizeof(buf), "%d-%m-%Y %H:%M:%S", &tstruct);
+    return buf;
+}
+
+bool isValidDate(const string& date) {// Function to validate date format (DD-MM-YYYY)
+    // Define the regular expression for the "DD-MM-YYYY" format
+    regex dateFormat("^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\\d{4}$");
 
     // Check if the date matches the regular expression
     return regex_match(date, dateFormat);
