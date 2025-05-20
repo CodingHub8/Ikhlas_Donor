@@ -7,7 +7,6 @@ using namespace std;
 
 // Item section start
 void itemManagement(User& user) {
-	system("pause");
 	system("cls");//clear text
 	int choice;
 	Item item;
@@ -17,29 +16,37 @@ void itemManagement(User& user) {
 	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Add Item                            +" << endl;
 	cout << "+ 2. Edit Item                           +" << endl;
-	cout << "+ 3. Delete Item                         +" << endl;
+	cout << "+ 3. View Item                           +" << endl;
+	cout << "+ 4. Delete Item                         +" << endl;
 	cout << "+ 0. Back                                +" << endl;
 	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
 	inputint(choice);
 
 	switch(choice){
-		case 1:
+		case 1:// Add item
 			if (item.addItem(user)) {
 				cout << "Item added successfully!" << endl;
 			} else {
 				cout << "Failed to add item. Please try again." << endl;
 			}
 			break;
-		case 2:
+		case 2:// Edit item
+			if (item.editItem(user)) {
+				cout << "Item updated successfully." << endl;
+			} else {
+				cout << "Failed to update item. Please try again." << endl;
+			}
 			break;
-		case 3:
-			system("cls");//clear text
-
+		case 3:// View item
+			item.viewItem();
 			break;
-		case 4:
-			system("cls");//clear text
-
+		case 4:// Delete item
+			if (item.deleteItem(user)) {
+				cout << "Item deleted successfully." << endl;
+			} else {
+				cout << "Failed to delete item." << endl;
+			}
 			break;
 		case 0: return;//return to previous page
 		default: cout << "Invalid choice. Please try again." << endl << endl;

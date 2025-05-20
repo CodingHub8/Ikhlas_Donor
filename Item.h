@@ -8,7 +8,7 @@ class Item {
 		char ID[10];//Have different formats per category (e.g., F001, C001, T001, M001)
 		char donorID[10];
 		char name[100];
-		int amount;
+		unsigned int amount;
 		char category[100];// food, clothing, toy, money
 		char description[255];// can put an expiry date if food category
 		string dateAdded;//auto generated
@@ -25,7 +25,7 @@ class Item {
 
 		Item() = default;// Default constructor
 
-		bool addItem(User& user) {
+		bool addItem(User& user) {// Create
 			strcpy(donorID, user.getID());// Copy donor ID to item ID
 
 			cout << "Enter item name: ";
@@ -93,6 +93,114 @@ class Item {
 				   string(description) + "', '" +
 				   dateAdded + "')";
 			return mysql_query(conn, query.c_str()) == 0;
+		}
+
+		void viewItem() {// Read
+			string input;
+			cout << "Enter Item ID or Item Name: ";
+			getline(cin, input);
+
+			string query = "SELECT * FROM item WHERE ID='" + string(ID) + "' OR NAME='" + string(name) + "'";
+			if (mysql_query(conn, query.c_str()) != 0) {
+				cout << "Error fetching item: " << mysql_error(conn) << endl;
+				return;
+			}
+			res = mysql_store_result(conn);
+			if (res) {
+				row = mysql_fetch_row(res);
+				if (row) {
+					cout << "Item ID: " << row[0] << endl;
+					cout << "Donor ID: " << row[1] << endl;
+					cout << "Name: " << row[2] << endl;
+					cout << "Amount: " << row[3] << endl;
+					cout << "Category: " << row[4] << endl;
+					cout << "Description: " << (row[5] ? row[5] : "") << endl;
+					cout << "Date Added: " << row[6] << endl;
+				} else {
+					cout << "Item not found." << endl;
+				}
+				mysql_free_result(res);
+			} else {
+				cout << "No item data found." << endl;
+			}
+
+		}
+
+		bool editItem(User& user) {// Update
+			// Only allows the donor (owner) to edit
+			if (strcmp(user.getID(), donorID) != 0) {
+				cout << "You are not allowed to edit this item." << endl;
+				return false;
+			}
+
+			cout << "Editing item: " << ID << endl;
+
+			// Edit name
+			char newName[100];
+			cout << "Enter new name (currently '" << name << "'): ";
+			cin.ignore();
+			cin.getline(newName, 100, '\n');
+			if (strlen(newName) > 0) strcpy(name, newName);
+
+			// Edit amount
+			cout << "Enter new amount (currently " << amount << "): ";
+			do {
+				unsigned int newAmount;
+				cin >> newAmount;
+				if (newAmount > 0) {
+					amount = newAmount;
+					break;
+				}
+				cout << "Amount must be greater than 0. Please re-enter: ";
+			} while (true);
+			cin.ignore();
+
+			// Edit description
+			if (strcmp(category, "Food") == 0) {
+				cout << "Enter new expiry date (YYYY-MM-DD): ";
+				char newExpiry[255];
+				cin.getline(newExpiry, 255, '\n');
+				while (strlen(newExpiry) == 0 || !isValidDate(newExpiry) || !isFutureDate(newExpiry)) {
+					cout << "Invalid expiry date. Please re-enter: ";
+					cin.getline(newExpiry, 255, '\n');
+				}
+				string expiryStr = "Best Before: ";
+				expiryStr += newExpiry;
+				strncpy(description, expiryStr.c_str(), 254);
+				description[254] = '\0'; // Ensure null-termination
+			} else {
+				cout << "Enter new description (currently '" << description << "'): ";
+				char newDesc[255];
+				cin.getline(newDesc, 255, '\n');
+				if (strlen(newDesc) > 0) strcpy(description, newDesc);
+			}
+
+			string query = "UPDATE item SET NAME='" + string(name) +
+						   "', AMOUNT=" + to_string(amount) +
+						   ", DESCRIPTION='" + string(description) +
+						   "' WHERE ID='" + string(ID) + "'";
+			if (mysql_query(conn, query.c_str()) == 0) {
+				return true;
+			}
+
+			return false;
+		}
+
+		bool deleteItem(User& user) {// Delete
+			// Only allows the donor (owner) to delete
+			if (strcmp(user.getID(), donorID) != 0) {
+				cout << "You are not allowed to delete this item." << endl;
+				return false;
+			}
+
+			cout << "Enter item ID to delete: ";
+			cin.getline(ID, 10, '\n');
+
+			string query = "DELETE FROM item WHERE ID='" + string(ID) + "'";
+			if (mysql_query(conn, query.c_str()) == 0) {
+				return true;
+			}
+			return false;
 		}
 
 		const char* getID() const {
