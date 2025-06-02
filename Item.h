@@ -3,6 +3,19 @@
 #include <iostream>
 using namespace std;
 
+const string divider = "| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |";
+void headerPrint() {
+	cout << left << "| "
+		 << setw(10) << "ID" << "| "
+		 << setw(10) << "Donor ID" << "| "
+		 << setw(50) << "Name" << "| "
+		 << setw(10) << "Amount" << "| "
+		 << setw(10) << "Category" << "| "
+		 << setw(50) << "Description" << "| "
+		 << setw(20) << "Date Added" << " |"
+		 << endl;
+}
+
 class Item {
 	private:
 		char ID[10];//Have different formats per category (e.g., F001, C001, T001, M001)
@@ -100,7 +113,7 @@ class Item {
 			cout << "Enter Item ID or Item Name: ";
 			getline(cin, input);
 
-			string query = "SELECT * FROM item WHERE ID='" + string(ID) + "' OR NAME='" + string(name) + "'";
+			string query = "SELECT * FROM item WHERE ID='" + string(input) + "' OR NAME='" + string(input) + "'";
 			if (mysql_query(conn, query.c_str()) != 0) {
 				cout << "Error fetching item: " << mysql_error(conn) << endl;
 				return;
@@ -126,10 +139,55 @@ class Item {
 
 		}
 
+		void viewAllItems(string query) {// Read
+			if (mysql_query(conn, query.c_str()) != 0) {
+				cout << "Error fetching items: " << mysql_error(conn) << endl;
+				return;
+			}
+			res = mysql_store_result(conn);
+			if (res) {
+				headerPrint();
+				cout << divider << endl;
+				while ((row = mysql_fetch_row(res))) {
+					cout << left << "| "
+						 << setfill(' ') << setw(10) << row[0] << "| "
+						 << setfill(' ') << setw(10) << row[1] << "| "
+						 << setfill(' ') << setw(50) << row[2] << "| "
+						 << setfill(' ') << setw(10) << row[3] << "| "
+						 << setfill(' ') << setw(10) << row[4] << "| "
+						 << setfill(' ') << setw(50) << row[5] << "| "
+						 << setfill(' ') << setw(20) << row[6] << " |"
+						 << endl;
+				}
+				cout << divider << endl;
+				cout << endl;
+				mysql_free_result(res);
+			}
+		}
+
+		bool verifyUser(User& user, string query) {
+			if (mysql_query(conn, query.c_str()) != 0) {
+				cout << "Error fetching item owner: " << mysql_error(conn) << endl;
+				return false;
+			}
+
+			res = mysql_store_result(conn);
+			row = mysql_fetch_row(res);
+
+			if (strcmp(user.getID(), row[0]) != 0) {
+				cout << "You are not allowed to modify any item(s) that you did not add." << endl;
+				mysql_free_result(res);
+				return false;
+			}
+			mysql_free_result(res);
+			return true;
+		}
+
 		bool editItem(User& user) {// Update
-			// Only allows the donor (owner) to edit
-			if (strcmp(user.getID(), donorID) != 0) {
-				cout << "You are not allowed to edit this item." << endl;
+			// Retrieve fresh DONORID from DB before checking permission
+			string query = "SELECT DONORID FROM item WHERE DONORID='" + string(user.getID()) + "'";
+
+			if (!verifyUser(user, query)) {
 				return false;
 			}
 
@@ -175,7 +233,7 @@ class Item {
 				if (strlen(newDesc) > 0) strcpy(description, newDesc);
 			}
 
-			string query = "UPDATE item SET NAME='" + string(name) +
+			query = "UPDATE item SET NAME='" + string(name) +
 						   "', AMOUNT=" + to_string(amount) +
 						   ", DESCRIPTION='" + string(description) +
 						   "' WHERE ID='" + string(ID) + "'";
@@ -187,19 +245,24 @@ class Item {
 		}
 
 		bool deleteItem(User& user) {// Delete
-			// Only allows the donor (owner) to delete
-			if (strcmp(user.getID(), donorID) != 0) {
-				cout << "You are not allowed to delete this item." << endl;
+			// Retrieve fresh DONORID from DB before checking permission
+			string query = "SELECT DONORID FROM item WHERE DONORID='" + string(user.getID()) + "'";
+
+			if (!verifyUser(user, query)) {
 				return false;
 			}
 
-			cout << "Enter item ID to delete: ";
+			cout << "Enter item ID to delete (Enter '0' to cancel): ";
 			cin.getline(ID, 10, '\n');
+			if (strcmp(ID, "0") == 0) {
+				return false; // Cancel deletion
+			}
 
-			string query = "DELETE FROM item WHERE ID='" + string(ID) + "'";
+			query = "DELETE FROM item WHERE ID='" + string(ID) + "'";
 			if (mysql_query(conn, query.c_str()) == 0) {
 				return true;
 			}
+			cout << "Enter only the item ID listed above." << endl;
 			return false;
 		}
 

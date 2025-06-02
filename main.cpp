@@ -9,6 +9,8 @@ using namespace std;
 void itemManagement(User& user) {
 	system("cls");//clear text
 	int choice;
+	int viewChoice;
+	string query;
 	Item item;
 
 	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
@@ -32,6 +34,8 @@ void itemManagement(User& user) {
 			}
 			break;
 		case 2:// Edit item
+			query = "SELECT * FROM item WHERE DONORID = '" + string(user.getID()) + "'";
+			item.viewAllItems(query);//view all items to get ID
 			if (item.editItem(user)) {
 				cout << "Item updated successfully." << endl;
 			} else {
@@ -39,19 +43,40 @@ void itemManagement(User& user) {
 			}
 			break;
 		case 3:// View item
-			item.viewItem();
+			do {
+				system("cls");//clear text
+				cout << "1. Search for an item" << endl;
+				cout << "2. View all items" << endl;
+				cout << "0. Back" << endl;
+				cout << "Please choose from the option(s) above: ";
+				inputint(viewChoice);
+
+				if (viewChoice == 1) {
+					item.viewItem();
+				} else if (viewChoice == 2) {
+					item.viewAllItems("SELECT * FROM item");
+				} else if (viewChoice == 0) {
+					break;
+				} else {
+					cout << "Invalid choice. Please try again." << endl << endl;
+				}
+				system("pause");//pause to view the result
+			} while (true);
 			break;
 		case 4:// Delete item
+			query = "SELECT * FROM item WHERE DONORID = '" + string(user.getID()) + "'";
+			item.viewAllItems(query);//view all items to get ID
 			if (item.deleteItem(user)) {
 				cout << "Item deleted successfully." << endl;
 			} else {
-				cout << "Failed to delete item." << endl;
+				cout << "Item deletion failed or cancelled." << endl;
 			}
 			break;
 		case 0: return;//return to previous page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 
+	system("pause");//pause to view the result
 	itemManagement(user);
 }
 
@@ -95,10 +120,8 @@ void userMenu(){
 			user.signup();
 			system("pause");
 			break;
-		case 0:
-			return;//return to previous page
-		default:
-			cout << "Invalid choice. Please try again." << endl << endl;
+		case 0: return;//return to previous page
+		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 
 	userMenu();
@@ -147,9 +170,10 @@ void donorOptions(User& user) {
 				userMenu();
 			}
 			break;
-		case 0: return;//return to previous page
+		case 0: return;//return to menu page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
+	donorOptions(user);
 }
 
 void recipientOptions(User& user) {
@@ -186,6 +210,7 @@ void recipientOptions(User& user) {
 		case 0: return;//return to previous page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
+	recipientOptions(user);
 }
 // User section ends
 
