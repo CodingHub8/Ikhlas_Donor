@@ -173,7 +173,7 @@ void donorOptions(User& user) {
 		case 0: return;//return to menu page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
-	donorOptions(user);
+	userOptions(user);
 }
 
 void recipientOptions(User& user) {
@@ -210,7 +210,7 @@ void recipientOptions(User& user) {
 		case 0: return;//return to previous page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
-	recipientOptions(user);
+	userOptions(user);
 }
 // User section ends
 
