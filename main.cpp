@@ -25,6 +25,7 @@ void itemManagement(User& user) {
 	cout << "Please choose from the option(s) above: ";
 	inputint(choice);
 
+	system("cls");//clear text
 	switch(choice){
 		case 1:// Add item
 			if (item.addItem(user)) {
@@ -36,6 +37,7 @@ void itemManagement(User& user) {
 		case 2:// Edit item
 			query = "SELECT * FROM item WHERE DONORID = '" + string(user.getID()) + "'";
 			item.viewAllItems(query);//view all items to get ID
+			item.viewItem();//view item to get name and price
 			if (item.editItem(user)) {
 				cout << "Item updated successfully." << endl;
 			} else {
@@ -62,6 +64,7 @@ void itemManagement(User& user) {
 				}
 				system("pause");//pause to view the result
 			} while (true);
+			itemManagement(user);
 			break;
 		case 4:// Delete item
 			query = "SELECT * FROM item WHERE DONORID = '" + string(user.getID()) + "'";
@@ -152,20 +155,18 @@ void donorOptions(User& user) {
 	cout << "Please choose from the option(s) above: ";
 	inputint(choice);
 
+	system("cls");//clear text
 	switch(choice){
 		case 1:
-			system("cls");//clear text
 			itemManagement(user);
 			break;
 		case 2:
 			//some donor function
 			break;
 		case 3:
-			system("cls");//clear text
 			user.editProfile();
 			break;
 		case 4:
-			system("cls");//clear text
 			if (user.deleteProfile()) {
 				userMenu();
 			}
@@ -180,8 +181,8 @@ void recipientOptions(User& user) {
 	int choice;
 	cout << "------------------ RECIPIENT ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-	cout << "+ 1. Option 1                                 +" << endl;
-	cout << "+ 2. Option 2                                 +" << endl;
+	cout << "+ 1. Request Donation                         +" << endl;
+	cout << "+ 2. Request Status                           +" << endl;
 	cout << "+ 3. Edit Profile                             +" << endl;
 	cout << "+ 4. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
@@ -189,20 +190,18 @@ void recipientOptions(User& user) {
 	cout << "Please choose from the option(s) above: ";
 	inputint(choice);
 
+	system("cls");//clear text
 	switch(choice){
 		case 1:
-			system("cls");//clear text
-			//some recipient function
+			//Request donation
 			break;
 		case 2:
 			//some recipient function
 			break;
 		case 3:
-			system("cls");//clear text
 			user.editProfile();
 			break;
 		case 4:
-			system("cls");//clear text
 			if (user.deleteProfile()) {
 				userMenu();
 			}

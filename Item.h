@@ -41,20 +41,6 @@ class Item {
 		bool addItem(User& user) {// Create
 			strcpy(donorID, user.getID());// Copy donor ID to item ID
 
-			cout << "Enter item name: ";
-			cin.getline(name, 100, '\n');
-			while (strlen(name) == 0) {// Validate name not empty
-				cout << "Name cannot be empty. Please re-enter: ";
-				cin.getline(name, 100, '\n');
-			}
-
-			cout << "Enter item amount: ";
-			cin >> amount;
-			while (amount <= 0) {
-				cout << "Amount must be greater than 0. Please re-enter: ";
-				cin >> amount;
-			}
-
 			char catCode;
 			cout << "----- Item categories -----" << endl;
 			cout << "[F]ood" << endl;
@@ -67,6 +53,20 @@ class Item {
 			if (catCode != 'F' && catCode != 'C' && catCode != 'T' && catCode != 'M') {
 				catCode = 'X';
 				strcpy(category, "unknown");
+			}
+
+			cout << "Enter item name: ";
+			cin.getline(name, 100, '\n');
+			while (strlen(name) == 0) {// Validate name not empty
+				cout << "Name cannot be empty. Please re-enter: ";
+				cin.getline(name, 100, '\n');
+			}
+
+			cout << "Enter item amount: ";
+			cin >> amount;
+			while (amount <= 0) {
+				cout << "Amount must be greater than 0. Please re-enter: ";
+				cin >> amount;
 			}
 
 			switch (catCode) {
@@ -108,7 +108,7 @@ class Item {
 			return mysql_query(conn, query.c_str()) == 0;
 		}
 
-		void viewItem() {// Read
+		void viewItem() {// Read (can also be used for searching
 			string input;
 			cout << "Enter Item ID or Item Name: ";
 			getline(cin, input);
@@ -122,24 +122,32 @@ class Item {
 			if (res) {
 				row = mysql_fetch_row(res);
 				if (row) {
-					cout << "Item ID: " << row[0] << endl;
-					cout << "Donor ID: " << row[1] << endl;
-					cout << "Name: " << row[2] << endl;
-					cout << "Amount: " << row[3] << endl;
-					cout << "Category: " << row[4] << endl;
-					cout << "Description: " << (row[5] ? row[5] : "") << endl;
-					cout << "Date Added: " << row[6] << endl;
-				} else {
-					cout << "Item not found." << endl;
+					strcpy(ID, row[0]);
+					strcpy(donorID, row[1]);
+					strcpy(name, row[2]);
+					setAmount(stoi(row[3]));
+					setCategory(row[4]);
+					setDescription(row[5]);
+					setDateAdded(row[6]);
+
+					cout << "Item ID: " << ID << endl;
+					cout << "Donor ID: " << donorID << endl;
+					cout << "Name: " << name << endl;
+					cout << "Amount: " << amount << endl;
+					cout << "Category: " << category << endl;
+					cout << "Description: " << (description ? description : "") << endl;
+					cout << "Date Added: " << dateAdded << endl;
+
+					return;
 				}
+				cout << "Item not found." << endl;
 				mysql_free_result(res);
 			} else {
 				cout << "No item data found." << endl;
 			}
-
 		}
 
-		void viewAllItems(string query) {// Read
+		void viewAllItems(const string &query) {// Read
 			if (mysql_query(conn, query.c_str()) != 0) {
 				cout << "Error fetching items: " << mysql_error(conn) << endl;
 				return;
@@ -165,7 +173,7 @@ class Item {
 			}
 		}
 
-		bool verifyUser(User& user, string query) {
+		bool verifyUser(User& user, const string &query) {
 			if (mysql_query(conn, query.c_str()) != 0) {
 				cout << "Error fetching item owner: " << mysql_error(conn) << endl;
 				return false;
@@ -183,65 +191,94 @@ class Item {
 			return true;
 		}
 
-		bool editItem(User& user) {// Update
-			// Retrieve fresh DONORID from DB before checking permission
-			string query = "SELECT DONORID FROM item WHERE DONORID='" + string(user.getID()) + "'";
+		bool editItem(User& user) {
+		    // Retrieve fresh DONORID from DB before checking permission
+		    string query = "SELECT DONORID FROM item WHERE DONORID='" + string(user.getID()) + "'";
+		    if (!verifyUser(user, query)) {
+		        return false;
+		    }
 
-			if (!verifyUser(user, query)) {
-				return false;
-			}
+		    bool updated = false;
+		    bool done = false;
+		    while (!done) {
+		        cout << "\nEditing item: " << ID << endl;
+		    	cout << "1. Name (" << name << ")\n";
+		        cout << "2. Amount (" << amount << ")\n";
+		        cout << "3. Description (" << description << ")\n";
+		        cout << "4. Done\n";
+		        cout << "Enter your choice: ";
 
-			cout << "Editing item: " << ID << endl;
+		        int choice;
+		        cin >> choice;
+		        cin.ignore();
 
-			// Edit name
-			char newName[100];
-			cout << "Enter new name (currently '" << name << "'): ";
-			cin.ignore();
-			cin.getline(newName, 100, '\n');
-			if (strlen(newName) > 0) strcpy(name, newName);
+		        switch (choice) {
+			        case 1: {
+			            char newName[100];
+			            cout << "Enter new name (currently '" << name << "'): ";
+			            cin.getline(newName, 100, '\n');
+			            if (strlen(newName) > 0) {
+			                strcpy(name, newName);
+			                updated = true;
+			            }
+			            break;
+			        }
+			        case 2: {
+			            cout << "Enter new amount (currently " << amount << "): ";
+			            do {
+			                unsigned int newAmount;
+			                cin >> newAmount;
+			                if (newAmount > 0) {
+			                    amount = newAmount;
+			                    updated = true;
+			                    break;
+			                }
+			                cout << "Amount must be greater than 0. Please re-enter: ";
+			            } while (true);
+			            cin.ignore();
+			            break;
+			        }
+			        case 3: {
+			            if (strcmp(category, "Food") == 0) {
+			                cout << "Enter new expiry date (YYYY-MM-DD): ";
+			                char newExpiry[255];
+			                cin.getline(newExpiry, 255, '\n');
+			                while (strlen(newExpiry) == 0 || !isValidDate(newExpiry) || !isFutureDate(newExpiry)) {
+			                    cout << "Invalid expiry date. Please re-enter: ";
+			                    cin.getline(newExpiry, 255, '\n');
+			                }
+			                string expiryStr = "Best Before: ";
+			                expiryStr += newExpiry;
+			                strncpy(description, expiryStr.c_str(), 254);
+			                description[254] = '\0';
+			            } else {
+			                cout << "Enter new description (currently '" << description << "'): ";
+			                char newDesc[255];
+			                cin.getline(newDesc, 255, '\n');
+			                if (strlen(newDesc) > 0) strcpy(description, newDesc);
+			            }
+			            updated = true;
+			            break;
+			        }
+			        case 4:
+			            done = true;
+			            break;
+			        default:
+			            cout << "Invalid choice.\n";
+		        }
+		    }
 
-			// Edit amount
-			cout << "Enter new amount (currently " << amount << "): ";
-			do {
-				unsigned int newAmount;
-				cin >> newAmount;
-				if (newAmount > 0) {
-					amount = newAmount;
-					break;
-				}
-				cout << "Amount must be greater than 0. Please re-enter: ";
-			} while (true);
-			cin.ignore();
+		    if (updated) {
+		        query = "UPDATE item SET NAME='" + string(name) +
+		                "', AMOUNT=" + to_string(amount) +
+		                ", DESCRIPTION='" + string(description) +
+		                "' WHERE ID='" + string(ID) + "'";
+		        if (mysql_query(conn, query.c_str()) == 0) {
+		            return true;
+		        }
+		    }
 
-			// Edit description
-			if (strcmp(category, "Food") == 0) {
-				cout << "Enter new expiry date (YYYY-MM-DD): ";
-				char newExpiry[255];
-				cin.getline(newExpiry, 255, '\n');
-				while (strlen(newExpiry) == 0 || !isValidDate(newExpiry) || !isFutureDate(newExpiry)) {
-					cout << "Invalid expiry date. Please re-enter: ";
-					cin.getline(newExpiry, 255, '\n');
-				}
-				string expiryStr = "Best Before: ";
-				expiryStr += newExpiry;
-				strncpy(description, expiryStr.c_str(), 254);
-				description[254] = '\0'; // Ensure null-termination
-			} else {
-				cout << "Enter new description (currently '" << description << "'): ";
-				char newDesc[255];
-				cin.getline(newDesc, 255, '\n');
-				if (strlen(newDesc) > 0) strcpy(description, newDesc);
-			}
-
-			query = "UPDATE item SET NAME='" + string(name) +
-						   "', AMOUNT=" + to_string(amount) +
-						   ", DESCRIPTION='" + string(description) +
-						   "' WHERE ID='" + string(ID) + "'";
-			if (mysql_query(conn, query.c_str()) == 0) {
-				return true;
-			}
-
-			return false;
+		    return false;
 		}
 
 		bool deleteItem(User& user) {// Delete
