@@ -106,13 +106,11 @@ class DBConnection {
                                 recipientCount++;
                             }
 
-                            string name = faker::person::fullName();
-                            string email = faker::internet::email();
-                            string password = faker::internet::password();
-                            string phone = faker::phone::phoneNumberByCountry(faker::phone::PhoneNumberCountryFormat::Malaysia);
-                            string address = faker::location::streetAddress() + ", " + faker::location::city();
-
-                            saveCredentials("Credentials/user.txt", false, email, password);
+                            const string name = faker::person::fullName();
+                            const string email = faker::internet::email();
+                            const string password = faker::internet::password();
+                            const string phone = faker::phone::phoneNumberByCountry(faker::phone::PhoneNumberCountryFormat::Malaysia);
+                            const string address = faker::location::streetAddress() + ", " + faker::location::city();
 
                             string query = "INSERT INTO user (ID, NAME, EMAIL, PASSWORD, PHONE, ADDRESS, ROLE) VALUES ('" +
                                            id + "', '" + name + "', '" + email + "', '" + to_string(encrypt(password)) + "', '" + phone + "', '" +
@@ -121,6 +119,8 @@ class DBConnection {
                             qstate = mysql_query(conn, query.c_str());
                             if (qstate != 0) {
                                 cout << "Error inserting user: " << mysql_error(conn) << endl;
+                            } else {
+                                saveCredentials("Generated Credentials/user.txt", false, email, password);
                             }
                         }
                     }
@@ -137,12 +137,10 @@ class DBConnection {
                     rowCount = atoi(row[0]);
                     if (rowCount < 3) {
                         for (int i = 0; i < 3; i++) {
-                            string username = faker::internet::username();
-                            string email = faker::internet::email();
-                            string password = faker::internet::password();
-                            string phone = faker::phone::phoneNumberByCountry(faker::phone::PhoneNumberCountryFormat::Malaysia);
-
-                            saveCredentials("Credentials/admin.txt", false, email, password);
+                            const string username = faker::internet::username();
+                            const string email = faker::internet::email();
+                            const string password = faker::internet::password();
+                            const string phone = faker::phone::phoneNumberByCountry(faker::phone::PhoneNumberCountryFormat::Malaysia);
 
                             string query = "INSERT INTO admin (USERNAME, EMAIL, PASSWORD, PHONE) VALUES ('" +
                                            username + "', '" + email + "', '" + to_string(encrypt(password)) + "', '" + phone + "');";
@@ -150,6 +148,8 @@ class DBConnection {
                             qstate = mysql_query(conn, query.c_str());
                             if (qstate != 0) {
                                 cout << "Error inserting admin: " << mysql_error(conn) << endl;
+                            } else {
+                                saveCredentials("Generated Credentials/admin.txt", false, username, password);
                             }
                         }
                     }
