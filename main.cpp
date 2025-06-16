@@ -162,6 +162,7 @@ void donorOptions(User& user) {
 			break;
 		case 2:
 			//some donor function
+			// choose between donation status/donation history/donation report
 			break;
 		case 3:
 			user.editProfile();
@@ -179,6 +180,8 @@ void donorOptions(User& user) {
 
 void recipientOptions(User& user) {
 	int choice;
+	Item item;
+
 	cout << "------------------ RECIPIENT ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Request Donation                         +" << endl;
@@ -192,16 +195,17 @@ void recipientOptions(User& user) {
 
 	system("cls");//clear text
 	switch(choice){
-		case 1:
-			//Request donation
+		case 1://Request donation
+			item.viewAllItems("SELECT * FROM item");//view all items
+			// TODO: create a request
 			break;
-		case 2:
-			//some recipient function
+		case 2://Request status
+
 			break;
-		case 3:
+		case 3://Edit profile
 			user.editProfile();
 			break;
-		case 4:
+		case 4://Delete profile
 			if (user.deleteProfile()) {
 				userMenu();
 			}
@@ -214,7 +218,8 @@ void recipientOptions(User& user) {
 // User section ends
 
 // Admin section start
-void adminOptions(Admin);
+void adminOptions(Admin&);
+void approveRecipientRequest(Admin&, User&);
 
 void adminMenu() {
 	system("cls");//clear text
@@ -255,7 +260,7 @@ void adminMenu() {
 	adminMenu();
 }
 
-void adminOptions(Admin admin) {
+void adminOptions(Admin& admin) {
 	system("cls");//clear text
 	int choice;
 
@@ -263,8 +268,8 @@ void adminOptions(Admin admin) {
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "------------------   ADMIN   ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-	cout << "+ 1. Option 1                                 +" << endl;
-	cout << "+ 2. Option 2                                 +" << endl;
+	cout << "+ 1. Approve Pending Request                  +" << endl;
+	cout << "+ 2. View Monthly Report                      +" << endl;
 	cout << "+ 3. Edit Profile                             +" << endl;
 	cout << "+ 4. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
@@ -272,17 +277,18 @@ void adminOptions(Admin admin) {
 	cout << "Please choose from the option(s) above: ";
 	inputint(choice);
 
+	system("cls");//clear text
 	switch(choice){
-		case 1:
+		case 1://Approve pending requests
+			// TODO: View 'requests' table to see rows with 'pending' status and approve them
 			break;
-		case 2:
+		case 2://View monthly report
+			// TODO: Generate report in .csv then display it in console
 			break;
 		case 3:
-			system("cls");//clear text
 			admin.editProfile();
 			break;
 		case 4:
-			system("cls");//clear text
 			if (admin.deleteProfile()) {
 				adminMenu();
 			}
@@ -295,27 +301,22 @@ void adminOptions(Admin admin) {
 }
 // Admin section ends
 
-void home() {
-	system("cls");//clear text, data still remains
-	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-	cout << "----------- IKHLAS DONOR SYSTEM ----------" << endl;
-	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-	cout << "+ 1. User                                +" << endl;
-	cout << "+ 2. Admin                               +" << endl;
-	cout << "+ 0. Exit                                +" << endl;
-	cout << "++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
-	cout << "Please choose from the option(s) above: ";
-}
-
 int main() {
 	DBConnection::InitializeDatabase();
 	system("pause");
-	system("cls");
 
 	int choice;
 
 	do{
-		home();
+		system("cls");//clear text, data still remains
+		cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+		cout << "----------- IKHLAS DONOR SYSTEM ----------" << endl;
+		cout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+		cout << "+ 1. User                                +" << endl;
+		cout << "+ 2. Admin                               +" << endl;
+		cout << "+ 0. Exit                                +" << endl;
+		cout << "++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
+		cout << "Please choose from the option(s) above: ";
 		inputint(choice);
 
 		switch(choice){

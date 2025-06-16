@@ -1,3 +1,8 @@
+#define NOMINMAX             // Disables min/max macros from Windows
+#define WIN32_LEAN_AND_MEAN  // Reduces Windows header bloat
+#include <windows.h>         // If you use Windows APIs
+#undef byte                  // Undefine any existing 'byte' macro
+#include <cstddef>           // For std::byte
 #include <iostream>
 #include <conio.h>
 #include <stdio.h>
