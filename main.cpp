@@ -142,6 +142,9 @@ void userOptions(User& user) {
 	}
 }
 
+// Donor
+void donationReport(User&);
+
 void donorOptions(User& user) {
 	int choice;
 	cout << "------------------   DONOR   ------------------" << endl;
@@ -178,6 +181,10 @@ void donorOptions(User& user) {
 	userOptions(user);
 }
 
+// Recipient
+void recipientCreateRequest(User&);
+void recipientRequestStatus(User&);
+
 void recipientOptions(User& user) {
 	int choice;
 	Item item;
@@ -197,10 +204,10 @@ void recipientOptions(User& user) {
 	switch(choice){
 		case 1://Request donation
 			item.viewAllItems("SELECT * FROM item");//view all items
-			// TODO: create a request
+			recipientCreateRequest(user);//create request
 			break;
 		case 2://Request status
-
+			recipientRequestStatus(user);
 			break;
 		case 3://Edit profile
 			user.editProfile();
@@ -215,11 +222,20 @@ void recipientOptions(User& user) {
 	}
 	userOptions(user);
 }
+
+void recipientCreateRequest(User& user) {
+	// TODO: Add logic
+}
+
+void recipientRequestStatus(User& user) {
+
+}
 // User section ends
 
 // Admin section start
 void adminOptions(Admin&);
-void approveRecipientRequest(Admin&, User&);
+void approveRecipientRequest(Admin&);
+void viewMonthlyReport(Admin&);
 
 void adminMenu() {
 	system("cls");//clear text
@@ -280,24 +296,34 @@ void adminOptions(Admin& admin) {
 	system("cls");//clear text
 	switch(choice){
 		case 1://Approve pending requests
-			// TODO: View 'requests' table to see rows with 'pending' status and approve them
+			approveRecipientRequest(admin);
 			break;
 		case 2://View monthly report
-			// TODO: Generate report in .csv then display it in console
+			viewMonthlyReport(admin);
 			break;
 		case 3:
 			admin.editProfile();
 			break;
 		case 4:
 			if (admin.deleteProfile()) {
-				adminMenu();
+				system("pause");//pause to view the result
+				return;
 			}
 			break;
 		case 0: return;//return to previous page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 
+	system("pause");
 	adminOptions(admin);
+}
+
+void approveRecipientRequest(Admin& admin) {
+	// TODO: Add logic
+}
+
+void viewMonthlyReport(Admin& admin) {
+	// TODO: Add logic
 }
 // Admin section ends
 
