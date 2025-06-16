@@ -165,7 +165,7 @@ void donorOptions(User& user) {
 			break;
 		case 2:
 			//some donor function
-			// choose between donation status/donation history/donation report
+			// donation report
 			break;
 		case 3:
 			user.editProfile();
