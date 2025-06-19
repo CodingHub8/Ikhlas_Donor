@@ -16,6 +16,7 @@
 #include <filesystem>
 
 #include "faker-cxx/company.h"
+#include "faker-cxx/lorem.h"
 #include "faker-cxx/sport.h"
 using namespace std;
 
@@ -313,6 +314,8 @@ class DBConnection {
                             dateStream << put_time(&request_tm, "%Y-%m-%d %H:%M:%S");
                             string requestDate = dateStream.str();
 
+                            string description = faker::lorem::sentences(0, 2);// generate between 0 to 2 sentences
+
                             string status;
                             switch (int statusRand = faker::number::integer<>(0, 2)) {
                                 case 0: status = "pending"; break;
@@ -320,9 +323,10 @@ class DBConnection {
                                 case 2: status = "approved"; break;
                             }
 
-                            string query = "INSERT INTO request (ID, RECIPIENTID, ITEMID, AMOUNT, REQUESTADDRESS, REQUESTDATE, STATUS) VALUES ('" +
+                            string query = "INSERT INTO request (ID, RECIPIENTID, ITEMID, AMOUNT, REQUESTADDRESS, REQUESTDATE, DESCRIPTION, STATUS) VALUES ('" +
                                            id + "', '" + recipientId + "', '" + itemId + "', " + to_string(amount) + ", '" +
-                                           requestAddress + "', '" + requestDate + "', '" + status + "');";
+                                           requestAddress + "', '" + requestDate + "', " +
+                                           (description.empty() ? "NULL" : ("'" + description + "'")) + ", '" + status + "');";
 
                             qstate = mysql_query(conn, query.c_str());
                             if (qstate != 0) {

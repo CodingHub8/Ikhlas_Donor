@@ -3,6 +3,7 @@
 #include "User.h"
 #include "Admin.h"
 #include "Item.h"
+#include "Recipient.h"
 using namespace std;
 
 // Item section start
@@ -164,8 +165,7 @@ void donorOptions(User& user) {
 			itemManagement(user);
 			break;
 		case 2:
-			//some donor function
-			// donation report
+			donationReport(user);
 			break;
 		case 3:
 			user.editProfile();
@@ -179,6 +179,10 @@ void donorOptions(User& user) {
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
 	userOptions(user);
+}
+
+void donationReport(User& user){
+	// TODO: Add logic
 }
 
 // Recipient
@@ -319,7 +323,33 @@ void adminOptions(Admin& admin) {
 }
 
 void approveRecipientRequest(Admin& admin) {
+	vector<Request> requests;
 	string query = "SELECT * FROM request WHERE STATUS = 'pending'";
+	if (mysql_query(conn, query.c_str()) != 0) {
+		cout << "Error fetching requests: " << mysql_error(conn) << endl;
+		return;
+	}
+	res = mysql_store_result(conn);
+	if (res) {
+		cout << setw(170) << setfill('-') << "" << endl;
+		while ((row = mysql_fetch_row(res))) {
+			cout << left << "| "
+				 << setfill(' ') << setw(10) << row[0] << "| "//ID
+				 << setfill(' ') << setw(10) << row[1] << "| "//recipientID
+				 << setfill(' ') << setw(10) << row[2] << "| "//itemID
+				 << right
+				 << setfill(' ') << setw(10) << row[3] << "| "//amount
+				 << left
+				 << setfill(' ') << setw(50) << row[4] << "| "//requestAddress
+				 << setfill(' ') << setw(12) << row[5] << "| "//requestDate
+				 << setfill(' ') << setw(50) << (row[6] ? row[6] : "NULL") << "| "//description set to 50 characters length max
+				 << setfill(' ') << setw(10) << row[7] << " |"//status
+				 << endl;
+		}
+		cout << setw(170) << setfill('-') << "" << endl;
+		cout << endl;
+		mysql_free_result(res);
+	}
 }
 
 void viewMonthlyReport(Admin& admin) {
