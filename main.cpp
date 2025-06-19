@@ -228,7 +228,7 @@ void recipientCreateRequest(User& user) {
 }
 
 void recipientRequestStatus(User& user) {
-
+	// TODO: Add logic
 }
 // User section ends
 
@@ -319,7 +319,7 @@ void adminOptions(Admin& admin) {
 }
 
 void approveRecipientRequest(Admin& admin) {
-	// TODO: Add logic
+	string query = "SELECT * FROM request WHERE STATUS = 'pending'";
 }
 
 void viewMonthlyReport(Admin& admin) {
