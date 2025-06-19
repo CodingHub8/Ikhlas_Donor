@@ -27,7 +27,7 @@ add_executable(Ikhlas_Donor
         Utilities.h
         Admin.h
         Item.h
-        Recipient.h)
+        Request.h)
 
 target_link_libraries(Ikhlas_Donor
         mysql

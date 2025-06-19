@@ -48,8 +48,8 @@ class User {
 						setID(*&row[0]);
 						setName(*&row[1]);
 						setEmail(*&row[2]);
-						setPhone(*&row[4] != nullptr ? *&row[4] : "N/A");
-						setAddress(row[5] != nullptr ? row[5] : "N/A");
+						setPhone(*&row[4] != nullptr ? *&row[4] : "NULL");
+						setAddress(row[5] != nullptr ? row[5] : "NULL");
 						setRole(row[6]);
 						mysql_free_result(res);
 						return true;

@@ -3,7 +3,7 @@
 #include "User.h"
 #include "Admin.h"
 #include "Item.h"
-#include "Recipient.h"
+#include "Request.h"
 using namespace std;
 
 // Item section start
@@ -186,12 +186,12 @@ void donationReport(User& user){
 }
 
 // Recipient
-void recipientCreateRequest(User&);
 void recipientRequestStatus(User&);
 
 void recipientOptions(User& user) {
 	int choice;
 	Item item;
+	Request request;
 
 	cout << "------------------ RECIPIENT ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
@@ -208,7 +208,11 @@ void recipientOptions(User& user) {
 	switch(choice){
 		case 1://Request donation
 			item.viewAllItems("SELECT * FROM item");//view all items
-			recipientCreateRequest(user);//create request
+			if (request.createRequest(user)) {
+				cout << "Request created!" << endl;
+			} else {
+				cout << "Failed to request donation. Please try again." << endl;
+			}
 			break;
 		case 2://Request status
 			recipientRequestStatus(user);
@@ -224,11 +228,8 @@ void recipientOptions(User& user) {
 		case 0: return;//return to previous page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
+	system("pause");//pause to view the result
 	userOptions(user);
-}
-
-void recipientCreateRequest(User& user) {
-	cout << "Please enter the item ID to request: ";
 }
 
 void recipientRequestStatus(User& user) {
