@@ -397,6 +397,7 @@ class DBConnection {
                 {"AMOUNT", "INT", 15, "NOT NULL"},
                 {"REQUESTADDRESS", "TEXT", 0, "NOT NULL"},
                 {"REQUESTDATE", "DATETIME", 0, "NOT NULL"},
+                {"DESCRIPTION", "TEXT", 0, "DEFAULT NULL"},
                 {"STATUS", "ENUM('pending', 'failed', 'approved')", 0, "NOT NULL DEFAULT 'pending'"},
             };
             vector<string> requestForeignKeys = {

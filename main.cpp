@@ -151,7 +151,7 @@ void donorOptions(User& user) {
 	cout << "------------------   DONOR   ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Item Management                          +" << endl;
-	cout << "+ 2. Option 2                                 +" << endl;
+	cout << "+ 2. View Donation Report                     +" << endl;
 	cout << "+ 3. Edit Profile                             +" << endl;
 	cout << "+ 4. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
@@ -228,7 +228,7 @@ void recipientOptions(User& user) {
 }
 
 void recipientCreateRequest(User& user) {
-	// TODO: Add logic
+	cout << "Please enter the item ID to request: ";
 }
 
 void recipientRequestStatus(User& user) {
@@ -238,7 +238,8 @@ void recipientRequestStatus(User& user) {
 
 // Admin section start
 void adminOptions(Admin&);
-void approveRecipientRequest(Admin&);
+void viewRequests(Admin&, const string&);
+void processRecipientRequest();
 void viewMonthlyReport(Admin&);
 
 void adminMenu() {
@@ -300,7 +301,8 @@ void adminOptions(Admin& admin) {
 	system("cls");//clear text
 	switch(choice){
 		case 1://Approve pending requests
-			approveRecipientRequest(admin);
+			viewRequests(admin, string("pending"));
+			processRecipientRequest();
 			break;
 		case 2://View monthly report
 			viewMonthlyReport(admin);
@@ -322,34 +324,104 @@ void adminOptions(Admin& admin) {
 	adminOptions(admin);
 }
 
-void approveRecipientRequest(Admin& admin) {
+void viewRequests(Admin& admin, const string &status) {
 	vector<Request> requests;
-	string query = "SELECT * FROM request WHERE STATUS = 'pending'";
+	string query = "SELECT * FROM request WHERE STATUS = '" + status + "'";
 	if (mysql_query(conn, query.c_str()) != 0) {
 		cout << "Error fetching requests: " << mysql_error(conn) << endl;
 		return;
 	}
 	res = mysql_store_result(conn);
 	if (res) {
-		cout << setw(170) << setfill('-') << "" << endl;
+		cout << left << "| "
+			 << setfill(' ') << setw(10) << "ID" << + "| "//ID
+			 << setfill(' ') << setw(13) << "Recipient ID" << + "| "//recipientID
+			 << setfill(' ') << setw(10) << "Item ID" << + "| "//itemID
+			 << right
+			 << setfill(' ') << setw(10) << "Amount" << + "| "//amount
+			 << left
+			 << setfill(' ') << setw(50) << "Request Address" << + "| "//requestAddress
+			 << setfill(' ') << setw(20) << "Request Date" << + "| "//requestDate
+			 << setfill(' ') << setw(50) << "Description" << + "| "//description set to 50 characters length max
+			 << setfill(' ') << setw(10) << "Status" << + "|"//status
+			 << endl;
+		cout << setw(198) << setfill('-') << "" << endl;
 		while ((row = mysql_fetch_row(res))) {
+			string desc = row[6] ? row[6] : "NULL";
+			if (desc.length() > 50) {
+				desc.replace(47, 3, "...");
+				desc = desc.substr(0, 50);
+			}
+
 			cout << left << "| "
 				 << setfill(' ') << setw(10) << row[0] << "| "//ID
-				 << setfill(' ') << setw(10) << row[1] << "| "//recipientID
+				 << setfill(' ') << setw(13) << row[1] << "| "//recipientID
 				 << setfill(' ') << setw(10) << row[2] << "| "//itemID
 				 << right
 				 << setfill(' ') << setw(10) << row[3] << "| "//amount
 				 << left
 				 << setfill(' ') << setw(50) << row[4] << "| "//requestAddress
-				 << setfill(' ') << setw(12) << row[5] << "| "//requestDate
-				 << setfill(' ') << setw(50) << (row[6] ? row[6] : "NULL") << "| "//description set to 50 characters length max
+				 << setfill(' ') << setw(20) << row[5] << "| "//requestDate
+				 << setfill(' ') << setw(50) << desc << "| "//description set to 50 characters length max
 				 << setfill(' ') << setw(10) << row[7] << " |"//status
 				 << endl;
 		}
-		cout << setw(170) << setfill('-') << "" << endl;
+		cout << setw(198) << setfill('-') << "" << endl;
 		cout << endl;
 		mysql_free_result(res);
 	}
+}
+
+void processRecipientRequest() {
+	char requestID[10];
+	string status;
+
+	cout << "Please enter the request ID to process: ";
+	cin >> requestID;
+	strcpy(requestID, toUpperCase(requestID).c_str());
+
+	cout << "Do you want to [1]Approve or [2]Reject this request?" << endl;
+	int choice;
+	inputint(choice);
+
+	if (choice == 1) {
+		status = "approved";
+	} else if (choice == 2) {
+		status = "failed";
+	}
+
+	string query =
+			"SELECT r.AMOUNT as reqAmount, i.AMOUNT as itemAmount, r.ITEMID FROM request r JOIN item i ON r.ITEMID = i.ID WHERE r.ID = '"
+			+ string(requestID) + "'";
+	if (mysql_query(conn, query.c_str()) != 0) {
+		cout << "Error fetching amounts: " << mysql_error(conn) << endl;
+		return;
+	}
+	res = mysql_store_result(conn);
+	if (res) {
+		row = mysql_fetch_row(res);
+		int reqAmount = atoi(row[0]);
+		int itemAmount = atoi(row[1]);
+		string itemID = row[2];
+		int finalAmount = itemAmount - reqAmount;
+		mysql_free_result(res);
+
+		// Update request status
+		query = "UPDATE request SET STATUS = '" + status + "' WHERE ID = '" + string(requestID) + "'";
+		if (mysql_query(conn, query.c_str()) != 0) {
+			cout << "Error updating request: " << mysql_error(conn) << endl;
+			return;
+		}
+
+		// Update item amount
+		query = "UPDATE item SET AMOUNT = " + to_string(finalAmount) + " WHERE ID = '" + itemID + "'";
+		if (mysql_query(conn, query.c_str()) != 0) {
+			cout << "Error updating item amount: " << mysql_error(conn) << endl;
+			return;
+		}
+	}
+
+	cout << "Request processed successfully!" << endl;
 }
 
 void viewMonthlyReport(Admin& admin) {
