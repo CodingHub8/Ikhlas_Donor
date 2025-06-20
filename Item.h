@@ -3,19 +3,6 @@
 #include <iostream>
 using namespace std;
 
-const string divider = "| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |";
-void headerPrint() {
-	cout << left << "| "
-		 << setw(10) << "ID" << "| "
-		 << setw(10) << "Donor ID" << "| "
-		 << setw(50) << "Name" << "| "
-		 << setw(10) << "Amount" << "| "
-		 << setw(10) << "Category" << "| "
-		 << setw(50) << "Description" << "| "
-		 << setw(20) << "Date Added" << " |"
-		 << endl;
-}
-
 class Item {
 	private:
 		char ID[10];//Have different formats per category (e.g., F001, C001, T001, M001)
@@ -154,8 +141,16 @@ class Item {
 			}
 			res = mysql_store_result(conn);
 			if (res) {
-				headerPrint();
-				cout << divider << endl;
+				cout << left << "| "
+					 << setw(10) << "ID" << "| "
+					 << setw(10) << "Donor ID" << "| "
+					 << setw(50) << "Name" << "| "
+					 << setw(10) << "Amount" << "| "
+					 << setw(10) << "Category" << "| "
+					 << setw(50) << "Description" << "| "
+					 << setw(20) << "Date Added" << " |"
+					 << endl;
+				cout << setw(180) << setfill('-') << "" << endl;
 				while ((row = mysql_fetch_row(res))) {
 					cout << left << "| "
 						 << setfill(' ') << setw(10) << row[0] << "| "
@@ -167,7 +162,7 @@ class Item {
 						 << setfill(' ') << setw(20) << row[6] << " |"
 						 << endl;
 				}
-				cout << divider << endl;
+				cout << setw(180) << setfill('-') << "" << endl;
 				cout << endl;
 				mysql_free_result(res);
 			}

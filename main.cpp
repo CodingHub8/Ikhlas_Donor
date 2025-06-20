@@ -6,6 +6,55 @@
 #include "Request.h"
 using namespace std;
 
+// Reusable functions start
+void viewRequests(const string& query) {
+	vector<Request> requests;
+	if (mysql_query(conn, query.c_str()) != 0) {
+		cout << "Error fetching requests: " << mysql_error(conn) << endl;
+		return;
+	}
+	res = mysql_store_result(conn);
+	if (res) {
+		cout << left << "| "
+			 << setfill(' ') << setw(10) << "ID" << + "| "//ID
+			 << setfill(' ') << setw(13) << "Recipient ID" << + "| "//recipientID
+			 << setfill(' ') << setw(10) << "Item ID" << + "| "//itemID
+			 << right
+			 << setfill(' ') << setw(10) << "Amount" << + "| "//amount
+			 << left
+			 << setfill(' ') << setw(50) << "Request Address" << + "| "//requestAddress
+			 << setfill(' ') << setw(20) << "Request Date" << + "| "//requestDate
+			 << setfill(' ') << setw(50) << "Description" << + "| "//description set to 50 characters length max
+			 << setfill(' ') << setw(10) << "Status" << + " |"//status
+			 << endl;
+		cout << setw(191) << setfill('-') << "" << endl;
+		while ((row = mysql_fetch_row(res))) {
+			string desc = row[6] ? row[6] : "NULL";
+			if (desc.length() > 50) {
+				desc.replace(47, 3, "...");
+				desc = desc.substr(0, 50);
+			}
+
+			cout << left << "| "
+				 << setfill(' ') << setw(10) << row[0] << "| "//ID
+				 << setfill(' ') << setw(13) << row[1] << "| "//recipientID
+				 << setfill(' ') << setw(10) << row[2] << "| "//itemID
+				 << right
+				 << setfill(' ') << setw(10) << row[3] << "| "//amount
+				 << left
+				 << setfill(' ') << setw(50) << row[4] << "| "//requestAddress
+				 << setfill(' ') << setw(20) << row[5] << "| "//requestDate
+				 << setfill(' ') << setw(50) << desc << "| "//description set to 50 characters length max
+				 << setfill(' ') << setw(10) << row[7] << " |"//status
+				 << endl;
+		}
+		cout << setw(191) << setfill('-') << "" << endl;
+		cout << endl;
+		mysql_free_result(res);
+	}
+}
+// Reusable function end
+
 // Item section start
 void itemManagement(User& user) {
 	system("cls");//clear text
@@ -186,8 +235,6 @@ void donationReport(User& user){
 }
 
 // Recipient
-void recipientRequestStatus(User&);
-
 void recipientOptions(User& user) {
 	int choice;
 	Item item;
@@ -196,7 +243,7 @@ void recipientOptions(User& user) {
 	cout << "------------------ RECIPIENT ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Request Donation                         +" << endl;
-	cout << "+ 2. Request Status                           +" << endl;
+	cout << "+ 2. View Request Status                      +" << endl;
 	cout << "+ 3. Edit Profile                             +" << endl;
 	cout << "+ 4. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
@@ -215,11 +262,10 @@ void recipientOptions(User& user) {
 			}
 			break;
 		case 2://Request status
-			recipientRequestStatus(user);
+			viewRequests("SELECT * FROM request WHERE RECIPIENTID = '" + string(user.getID()) + "'");
 			break;
 		case 3://Edit profile
-			user.editProfile();
-			break;
+			user.editProfile(); break;
 		case 4://Delete profile
 			if (user.deleteProfile()) {
 				userMenu();
@@ -231,15 +277,10 @@ void recipientOptions(User& user) {
 	system("pause");//pause to view the result
 	userOptions(user);
 }
-
-void recipientRequestStatus(User& user) {
-	// TODO: Add logic
-}
 // User section ends
 
 // Admin section start
 void adminOptions(Admin&);
-void viewRequests(Admin&, const string&);
 void processRecipientRequest();
 void viewMonthlyReport(Admin&);
 
@@ -302,7 +343,7 @@ void adminOptions(Admin& admin) {
 	system("cls");//clear text
 	switch(choice){
 		case 1://Approve pending requests
-			viewRequests(admin, string("pending"));
+			viewRequests("SELECT * FROM request WHERE STATUS = 'pending'");
 			processRecipientRequest();
 			break;
 		case 2://View monthly report
@@ -323,54 +364,6 @@ void adminOptions(Admin& admin) {
 
 	system("pause");
 	adminOptions(admin);
-}
-
-void viewRequests(Admin& admin, const string &status) {
-	vector<Request> requests;
-	string query = "SELECT * FROM request WHERE STATUS = '" + status + "'";
-	if (mysql_query(conn, query.c_str()) != 0) {
-		cout << "Error fetching requests: " << mysql_error(conn) << endl;
-		return;
-	}
-	res = mysql_store_result(conn);
-	if (res) {
-		cout << left << "| "
-			 << setfill(' ') << setw(10) << "ID" << + "| "//ID
-			 << setfill(' ') << setw(13) << "Recipient ID" << + "| "//recipientID
-			 << setfill(' ') << setw(10) << "Item ID" << + "| "//itemID
-			 << right
-			 << setfill(' ') << setw(10) << "Amount" << + "| "//amount
-			 << left
-			 << setfill(' ') << setw(50) << "Request Address" << + "| "//requestAddress
-			 << setfill(' ') << setw(20) << "Request Date" << + "| "//requestDate
-			 << setfill(' ') << setw(50) << "Description" << + "| "//description set to 50 characters length max
-			 << setfill(' ') << setw(10) << "Status" << + "|"//status
-			 << endl;
-		cout << setw(198) << setfill('-') << "" << endl;
-		while ((row = mysql_fetch_row(res))) {
-			string desc = row[6] ? row[6] : "NULL";
-			if (desc.length() > 50) {
-				desc.replace(47, 3, "...");
-				desc = desc.substr(0, 50);
-			}
-
-			cout << left << "| "
-				 << setfill(' ') << setw(10) << row[0] << "| "//ID
-				 << setfill(' ') << setw(13) << row[1] << "| "//recipientID
-				 << setfill(' ') << setw(10) << row[2] << "| "//itemID
-				 << right
-				 << setfill(' ') << setw(10) << row[3] << "| "//amount
-				 << left
-				 << setfill(' ') << setw(50) << row[4] << "| "//requestAddress
-				 << setfill(' ') << setw(20) << row[5] << "| "//requestDate
-				 << setfill(' ') << setw(50) << desc << "| "//description set to 50 characters length max
-				 << setfill(' ') << setw(10) << row[7] << " |"//status
-				 << endl;
-		}
-		cout << setw(198) << setfill('-') << "" << endl;
-		cout << endl;
-		mysql_free_result(res);
-	}
 }
 
 void processRecipientRequest() {
