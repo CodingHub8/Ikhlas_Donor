@@ -137,8 +137,6 @@ void itemManagement(User& user) {
 	system("pause");//pause to view the result
 	itemManagement(user);
 }
-
-
 // Item section ends
 
 // User section start
@@ -340,7 +338,7 @@ void donationReport(User& user) {//TODO: Fix some calculations
 
         // Track most requested items
         itemRequestCounts[item.getName()]++;
-        if (mostRequestedItems.find(item.getCategory()) == mostRequestedItems.end() ||
+        if (!mostRequestedItems.contains(item.getCategory()) ||
             itemRequestCounts[item.getName()] > itemRequestCounts[mostRequestedItems[item.getCategory()]]) {
             mostRequestedItems[item.getCategory()] = item.getName();
         }
@@ -412,7 +410,7 @@ void donationReport(User& user) {//TODO: Fix some calculations
 
         // Print most requested item in each category
         for (const auto& cat : categories) {
-            if (mostRequestedItems.find(cat) != mostRequestedItems.end()) {
+            if (mostRequestedItems.contains(cat)) {
                 cout << "- Most requested " << cat << " item: " << mostRequestedItems[cat]
                      << " (" << itemRequestCounts[mostRequestedItems[cat]] << " requests)\n";
             }
