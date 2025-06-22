@@ -60,7 +60,7 @@ void printBar(const string& label, double amount, double scale) {
 	for (int i = 0; i < count; ++i) cout << "#";
 	cout << " (" << amount << ")" << endl;
 }
-// Reusable function end
+// Reusable functions end
 
 // Item section start
 void itemManagement(User& user) {
