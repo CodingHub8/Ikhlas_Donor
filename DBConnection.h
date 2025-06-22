@@ -92,8 +92,8 @@ class DBConnection {
                 res = mysql_store_result(conn);
                 if ((row = mysql_fetch_row(res)) != nullptr) {
                     rowCount = atoi(row[0]);
-                    if (rowCount < 10) {
-                        for (int i = 0; i < 10; i++) {
+                    if (rowCount < 20) {
+                        for (int i = 0; i < 20; i++) {
                             string id;
                             string role;
 
@@ -165,7 +165,7 @@ class DBConnection {
                 res = mysql_store_result(conn);
                 if ((row = mysql_fetch_row(res)) != nullptr) {
                     rowCount = atoi(row[0]);
-                    if (rowCount < 10) {
+                    if (rowCount < 30) {
                         vector<string> donorIds;
                         string donorQuery = "SELECT ID FROM user WHERE ROLE = 'donor';";
                         qstate = mysql_query(conn, donorQuery.c_str());
@@ -178,7 +178,7 @@ class DBConnection {
                         }
 
                         vector<string> categories = {"Food", "Clothing", "Toy", "Money"};
-                        for (int i = 0; i < 20; i++) {
+                        for (int i = 0; i < 30; i++) {
                             if (donorIds.empty()) break;
 
                             string category = categories[faker::number::integer<size_t>(0, 3)];
@@ -265,7 +265,7 @@ class DBConnection {
                 res = mysql_store_result(conn);
                 if ((row = mysql_fetch_row(res)) != nullptr) {
                     rowCount = atoi(row[0]);
-                    if (rowCount < 10) {
+                    if (rowCount < 50) {
                         vector<string> recipientIds;
                         string recipientQuery = "SELECT ID FROM user WHERE ROLE = 'recipient';";
                         qstate = mysql_query(conn, recipientQuery.c_str());

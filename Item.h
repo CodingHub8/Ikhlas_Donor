@@ -267,7 +267,8 @@ class Item {
 		        query = "UPDATE item SET NAME='" + string(name) +
 		                "', AMOUNT=" + to_string(amount) +
 		                ", DESCRIPTION='" + string(description) +
-		                "' WHERE ID='" + string(ID) + "'";
+		                "' WHERE ID='" + string(ID) + "'"
+						" AND DONORID='" + string(user.getID()) + "'";
 		        if (mysql_query(conn, query.c_str()) == 0) {
 		            return true;
 		        }
@@ -290,7 +291,7 @@ class Item {
 				return false; // Cancel deletion
 			}
 
-			query = "DELETE FROM item WHERE ID='" + string(ID) + "'";
+			query = "DELETE FROM item WHERE ID='" + string(ID) + "' AND DONORID='" + string(user.getID()) + "'";
 			if (mysql_query(conn, query.c_str()) == 0) {
 				return true;
 			}

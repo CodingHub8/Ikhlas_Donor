@@ -2,18 +2,20 @@
 #define WIN32_LEAN_AND_MEAN  // Reduces Windows header bloat
 #include <windows.h>         // If you use Windows APIs
 #undef byte                  // Undefine any existing 'byte' macro
-#include <cstddef>           // For std::byte
-#include <iostream>
+#include <algorithm>
+#include <cctype>
+#include <cmath>
 #include <conio.h>
-#include <stdio.h>
-#include <time.h>
+#include <cstddef>           // For std::byte
 #include <ctime>
 #include <iomanip>
-#include <sstream>
+#include <iostream>
 #include <regex>
-#include <algorithm>
+#include <sstream>
+#include <stdio.h>
 #include <string>
-#include <cctype>
+#include <time.h>
+#include <vector>
 using namespace std;
 
 #pragma clang diagnostic push
@@ -70,7 +72,23 @@ string toLowerCase(const string& str) {
     return result;
 }
 
-const string currentDateTime() {// YYYY-MM-DD HH:MM:SS format
+string getMonthName(int month) {
+    string monthNames[] = {
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    };
+    return monthNames[month - 1];
+}
+
+void parseDate(const string& dateStr, int& year, int& month) {// Helper to parse YYYY-MM-DD and return year, month
+    sscanf(dateStr.c_str(), "%d-%d-%*d", &year, &month);
+}
+
+int getQuarter(int month) {
+    return (month - 1) / 3 + 1;
+}
+
+string currentDateTime() {// YYYY-MM-DD HH:MM:SS format
     time_t now = time(nullptr);
     tm tstruct;
     char buf[20]; // Enough for "YYYY-MM-DD HH:MM:SS" + null terminator
