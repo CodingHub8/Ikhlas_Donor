@@ -143,7 +143,7 @@ class User {
 		        break;
 		    }
 
-		    cout << "Enter your address: ";
+		    cout << "Enter your address (can be edited later): ";
 		    getline(cin, addressInput);
 
 		    // Role: donor/recipient
@@ -175,7 +175,7 @@ class User {
 		        phoneValue + ", " +
 		        addressValue + ", '" +
 		        roleInput + "')";
-		    int qstate = mysql_query(conn, insertQuery.c_str());
+		    qstate = mysql_query(conn, insertQuery.c_str());
 
 		    if (!qstate) {
 		        cout << "Sign-up successful! You may now log in." << endl;
@@ -289,7 +289,7 @@ class User {
 
 		bool deleteProfile() {// Delete function with password confirmation
 			cout << "\n--- Delete Profile ---\n";
-			cout << "Please confirm your password to delete your account: ";
+			cout << "Please confirm your password to delete your account (leave empty to cancel): ";
 			string passwordInput = hidePasswordKeys();
 			size_t hashedPassword = encrypt(passwordInput);
 

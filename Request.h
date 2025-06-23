@@ -32,8 +32,11 @@ class Request {
             strcpy(ID, generateID().c_str());// generate request ID (e.g. REQ001)
             strcpy(recipientID, user.getID());// copy recipient ID to request ID
 
-            cout << "Please enter the item ID to request: ";
+            cout << "Please enter the item ID to request (Enter '0' to cancel): ";
             cin >> itemID;
+            if (itemID == "0") {
+                return false;
+            }
             strcpy(itemID, toUpperCase(itemID).c_str());
 
             // item amount validation

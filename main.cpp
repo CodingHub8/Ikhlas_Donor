@@ -230,6 +230,7 @@ void donorOptions(User& user) {
 		case 0: return;//return to menu page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
+	system("pause");//pause to view the result
 	userOptions(user);
 }
 
@@ -464,7 +465,7 @@ void recipientOptions(User& user) {
 			if (Request request; request.createRequest(user)) {
 				cout << "Request created!" << endl;
 			} else {
-				cout << "Failed to request donation. Please try again." << endl;
+				cout << "Request failed or cancelled. Please try again." << endl;
 			}
 			break;
 		case 2://Request status
@@ -537,7 +538,7 @@ void adminOptions(Admin& admin) {
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "------------------   ADMIN   ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-	cout << "+ 1. Approve Pending Request                  +" << endl;
+	cout << "+ 1. Approve/Reject Pending Request           +" << endl;
 	cout << "+ 2. View Report                              +" << endl;
 	cout << "+ 3. Edit Profile                             +" << endl;
 	cout << "+ 4. Delete Profile                           +" << endl;
@@ -575,9 +576,35 @@ void adminOptions(Admin& admin) {
 void processRecipientRequest() {
 	char requestID[10];
 	string status;
+	string query = "SELECT ID FROM request WHERE STATUS = 'pending'";
 
-	cout << "Please enter the request ID to process: ";
-	cin >> requestID;
+	do {
+		cout << "Please enter the request ID to process (Enter '0' to cancel): ";
+		cin >> requestID;
+		if (strcmp(requestID, "0") == 0) return;
+
+		if (mysql_query(conn, query.c_str()) != 0) {
+			cout << "Error fetching request ID: " << mysql_error(conn) << endl;
+			return;
+		}
+		res = mysql_store_result(conn);
+		bool found = false;
+		if (res) {
+			while ((row = mysql_fetch_row(res))) {
+				if (strcmp(row[0], requestID) == 0) {
+					found = true;
+					break;
+				}
+			}
+			mysql_free_result(res);
+		}
+		if (!found) {
+			cout << "Request ID not found. Please enter a valid request ID" << endl;
+		} else {
+			break;
+		}
+	}while (true);
+
 	strcpy(requestID, toUpperCase(requestID).c_str());
 
 	cout << "Do you want to [1]Approve or [2]Reject this request?" << endl;
@@ -590,8 +617,7 @@ void processRecipientRequest() {
 		status = "failed";
 	}
 
-	string query =
-			"SELECT r.AMOUNT as reqAmount, i.AMOUNT as itemAmount, r.ITEMID FROM request r JOIN item i ON r.ITEMID = i.ID WHERE r.ID = '"
+	query = "SELECT r.AMOUNT as reqAmount, i.AMOUNT as itemAmount, r.ITEMID FROM request r JOIN item i ON r.ITEMID = i.ID WHERE r.ID = '"
 			+ string(requestID) + "'";
 	if (mysql_query(conn, query.c_str()) != 0) {
 		cout << "Error fetching amounts: " << mysql_error(conn) << endl;

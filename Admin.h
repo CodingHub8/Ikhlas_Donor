@@ -68,8 +68,8 @@ class Admin {
 
 			if (qstate == 0 && res) {
 			    row = mysql_fetch_row(res);
-			    if (row && atoi(row[0]) >= 2) {
-			        cout << "The total of existing admin accounts cannot exceed its limit (2)." << endl;
+			    if (row && atoi(row[0]) >= 3) {
+			        cout << "The total of existing admin accounts cannot exceed its limit (3)." << endl;
 			        mysql_free_result(res);
 			        return;
 			    }
@@ -251,7 +251,7 @@ class Admin {
 						if (updated) strcpy(phone, phoneStr.empty() ? "" : phoneInput);
 						break;
 					}
-					case 6:
+					case 0:
 						cout << "Edit cancelled.\n";
 						return;
 					default:
