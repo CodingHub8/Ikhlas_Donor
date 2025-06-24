@@ -650,7 +650,7 @@ void processRecipientRequest() {
 	cout << "Request processed successfully!" << endl;
 }
 
-void viewOverallReport() {
+void viewOverallReport() {//TODO: Fix calculations
     int choice;
     int year, month = 0, quarter = 0;
     string periodTitle, filename;
@@ -704,11 +704,8 @@ void viewOverallReport() {
     // Query to get all donations and requests for the period
     string query = "SELECT "
                    "item.CATEGORY, "
-                   "SUM(item.AMOUNT) as total_donated, "
                    "COUNT(item.ID) as donation_count, "
-                   "SUM(CASE WHEN request.STATUS = 'approved' THEN request.AMOUNT ELSE 0 END) as total_approved, "
-                   "SUM(CASE WHEN request.STATUS = 'pending' THEN request.AMOUNT ELSE 0 END) as total_pending, "
-                   "SUM(CASE WHEN request.STATUS = 'failed' THEN request.AMOUNT ELSE 0 END) as total_failed, "
+                   "SUM(item.AMOUNT) as total_donated, "
                    "COUNT(CASE WHEN request.STATUS = 'approved' THEN 1 ELSE NULL END) as approved_count, "
                    "COUNT(CASE WHEN request.STATUS = 'pending' THEN 1 ELSE NULL END) as pending_count, "
                    "COUNT(CASE WHEN request.STATUS = 'failed' THEN 1 ELSE NULL END) as failed_count "
@@ -722,77 +719,69 @@ void viewOverallReport() {
     }
 
     res = mysql_store_result(conn);
-    if (!res) {
+    if (!res || mysql_num_rows(res) == 0) {
         cout << "No data found for the selected period." << endl;
-        return;
+    } else {
+    	// Create and open CSV file
+		filename = "Reports/" + filename;
+	    if (filesystem::path pathObj(filename); pathObj.has_parent_path()) {
+			filesystem::create_directories(pathObj.parent_path());
+		}
+	    ofstream csvFile(filename, ios::out);
+	    if (!csvFile.is_open()) {
+	        cout << "Error creating CSV file." << endl;
+	        mysql_free_result(res);
+	        return;
+	    }
+
+	    // Write CSV header
+	    csvFile << "Category,Donation Count,Total Donated,Approved Count,Pending Count,Failed Count" << endl;
+
+	    // Print report header to console
+	    cout << "\n" << periodTitle << "\n";
+	    cout << string(periodTitle.length(), '=') << "\n\n";
+	    cout << left << setw(12) << "Category"
+	         << right << setw(15) << "Donation Count"
+	         << setw(15) << "Total Donated"
+	         << setw(15) << "Approved Count"
+	         << setw(15) << "Pending Count"
+	         << setw(15) << "Failed Count" << endl;
+	    cout << setw(87) << setfill('-') << "" << setfill(' ') << endl;
+
+	    // Process each row of data
+	    while ((row = mysql_fetch_row(res))) {
+	        string category = row[0] ? row[0] : "Unknown";
+	        string donationCount = row[1] ? row[1] : "0";
+	        string totalDonated = row[2] ? row[2] : "0";
+	        string totalApproved = row[3] ? row[3] : "0";
+	        string totalPending = row[4] ? row[4] : "0";
+	        string totalFailed = row[5] ? row[5] : "0";
+
+	        // Print to console
+	        cout << left << setw(12) << category
+	             << right << setw(15) << donationCount
+	             << setw(15) << totalDonated
+	             << setw(15) << totalApproved
+	             << setw(15) << totalPending
+	             << setw(15) << totalFailed << endl;
+
+	        // Write to CSV
+	        csvFile << category << ","
+					<< donationCount << ","
+					<< totalDonated << ","
+	                << totalApproved << ","
+					<< totalPending << ","
+					<< totalFailed << endl;
+	    }
+
+	    // Close CSV file
+	    csvFile.close();
+	    mysql_free_result(res);
+
+	    // Print summary
+	    cout << "\nReport saved as: " << filename << endl;
+	    cout << "Location: " << filesystem::current_path().string() << "\\" << filename << endl;
     }
-
-    // Create and open CSV file
-	filename = "Reports/" + filename;
-    if (filesystem::path pathObj(filename); pathObj.has_parent_path()) {
-		filesystem::create_directories(pathObj.parent_path());
-	}
-    ofstream csvFile(filename, ios::out);
-    if (!csvFile.is_open()) {
-        cout << "Error creating CSV file." << endl;
-        mysql_free_result(res);
-        return;
-    }
-
-    // Write CSV header
-    csvFile << "Category,Total Donated,Donation Count,Total Approved,Total Pending,Total Failed,"
-            << "Approved Count,Pending Count,Failed Count" << endl;
-
-    // Print report header to console
-    cout << "\n" << periodTitle << "\n";
-    cout << string(periodTitle.length(), '=') << "\n\n";
-    cout << left << setw(12) << "Category"
-         << right << setw(15) << "Total Donated"
-         << setw(15) << "Approved"
-         << setw(15) << "Pending"
-         << setw(15) << "Failed"
-         << setw(15) << "Donations"
-         << setw(15) << "Approved Count"
-         << setw(15) << "Pending Count"
-         << setw(15) << "Failed Count" << endl;
-    cout << setw(120) << setfill('-') << "" << setfill(' ') << endl;
-
-    // Process each row of data
-    while ((row = mysql_fetch_row(res))) {
-        string category = row[0] ? row[0] : "Unknown";
-        string totalDonated = row[1] ? row[1] : "0";
-        string donationCount = row[2] ? row[2] : "0";
-        string totalApproved = row[3] ? row[3] : "0";
-        string totalPending = row[4] ? row[4] : "0";
-        string totalFailed = row[5] ? row[5] : "0";
-        string approvedCount = row[6] ? row[6] : "0";
-        string pendingCount = row[7] ? row[7] : "0";
-        string failedCount = row[8] ? row[8] : "0";
-
-        // Write to CSV
-        csvFile << category << "," << totalDonated << "," << donationCount << ","
-                << totalApproved << "," << totalPending << "," << totalFailed << ","
-                << approvedCount << "," << pendingCount << "," << failedCount << endl;
-
-        // Print to console
-        cout << left << setw(12) << category
-             << right << setw(15) << totalDonated
-             << setw(15) << totalApproved
-             << setw(15) << totalPending
-             << setw(15) << totalFailed
-             << setw(15) << donationCount
-             << setw(15) << approvedCount
-             << setw(15) << pendingCount
-             << setw(15) << failedCount << endl;
-    }
-
-    // Close CSV file
-    csvFile.close();
-    mysql_free_result(res);
-
-    // Print summary
-    cout << "\nReport saved as: " << filename << endl;
-    cout << "Location: " << filesystem::current_path().string() << "\\" << filename << endl;
 
     system("pause");
 	viewOverallReport(); // Return to the menu after pause

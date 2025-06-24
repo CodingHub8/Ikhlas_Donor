@@ -4,9 +4,11 @@ project(Ikhlas_Donor)
 set(CMAKE_CXX_STANDARD 23)
 
 # Add MySQL Connector
+# installed from https://downloads.mysql.com/archives/community/?version=8.2.0&id=Microsoft-Windows ZIP Archive
 set(MYSQLCONNCPP_ROOT "C:/Users/aasus/Documents/Programming/MySQL/mysql-8.2.0-winx64")
 
 # Add Faker-cxx
+# Cloned locally from https://github.com/cieslarmichal/faker-cxx.git
 set(FAKER_ROOT "C:/Users/aasus/Documents/Programming/C++/Faker/faker-cxx")
 set(BUILD_TESTING OFF CACHE BOOL "Disable all tests" FORCE)
 set(FAKER_ENABLE_TESTING OFF CACHE BOOL "Disable Faker-cxx testing" FORCE)

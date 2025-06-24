@@ -20,6 +20,10 @@
 #include "faker-cxx/sport.h"
 using namespace std;
 
+/*
+    Faker library cloned from https://github.com/cieslarmichal/faker-cxx.git
+*/
+
 int qstate;
 MYSQL* conn;
 MYSQL_ROW row;
