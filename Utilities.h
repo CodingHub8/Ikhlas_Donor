@@ -1,4 +1,3 @@
-#define NOMINMAX             // Disables min/max macros from Windows
 #define WIN32_LEAN_AND_MEAN  // Reduces Windows header bloat
 #include <windows.h>         // If you use Windows APIs
 #undef byte                  // Undefine any existing 'byte' macro
@@ -10,6 +9,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <random>
 #include <regex>
 #include <sstream>
 #include <stdio.h>
@@ -43,7 +43,7 @@ string hidePasswordKeys() {//hide password characters
         char c = _getch();  // Use _getch() from conio.h to get a character without echoing
         if (c == 13)   // Enter key
             break;
-        else if (c == 8) {  // Backspace key
+        if (c == 8) {  // Backspace key
             if (!password.empty()) {
                 cout << "\b \b";  // Move the cursor back and clear the character
                 password.pop_back();
@@ -72,6 +72,25 @@ string toLowerCase(const string& str) {
     return result;
 }
 
+string toCamelCase(const string& str) {
+    string result;
+    bool newWord = true;
+    for (char c : str) {
+        if (isspace(c)) {
+            result += c;
+            newWord = true;
+        } else {
+            if (newWord) {
+                result += toupper(c);
+                newWord = false;
+            } else {
+                result += tolower(c);
+            }
+        }
+    }
+    return result;
+}
+
 string getMonthName(int month) {
     string monthNames[] = {
         "January", "February", "March", "April", "May", "June",
@@ -84,8 +103,37 @@ void parseDate(const string& dateStr, int& year, int& month) {// Helper to parse
     sscanf(dateStr.c_str(), "%d-%d-%*d", &year, &month);
 }
 
-int getQuarter(int month) {
-    return (month - 1) / 3 + 1;
+string randomDateTime(int minYear, int maxYear){ // YYYY-MM-DD HH:MM:SS format
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> yearDist(minYear, maxYear);
+    uniform_int_distribution<> monthDist(1, 12);
+    uniform_int_distribution<> hourDist(0, 23);
+    uniform_int_distribution<> minuteDist(0, 59);
+    uniform_int_distribution<> secondDist(0, 59);
+
+    int year = yearDist(gen);
+    int month = monthDist(gen);
+
+    // Determine the number of days in this month (accounting for leap years)
+    int daysInMonth[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+    int dayMax = daysInMonth[month - 1];
+    // Leap year for February
+    if (month == 2 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) {
+        dayMax = 29;
+    }
+    uniform_int_distribution<> dayDist(1, dayMax);
+
+    int day = dayDist(gen);
+    int hour = hourDist(gen);
+    int minute = minuteDist(gen);
+    int second = secondDist(gen);
+
+    // Format to string
+    char buf[20];
+    snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d",
+             year, month, day, hour, minute, second);
+    return string(buf);
 }
 
 string currentDateTime() {// YYYY-MM-DD HH:MM:SS format

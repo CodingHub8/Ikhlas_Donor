@@ -39,15 +39,18 @@ class Item {
 			catCode = toupper(catCode); // Convert to uppercase for consistency
 			if (catCode != 'F' && catCode != 'C' && catCode != 'T' && catCode != 'M') {
 				catCode = 'X';
-				strcpy(category, "unknown");
+				strcpy(category, "Unknown");
 			}
 
 			cout << "Enter item name: ";
+			cin.ignore();
 			cin.getline(name, 100, '\n');
 			while (strlen(name) == 0) {// Validate name not empty
 				cout << "Name cannot be empty. Please re-enter: ";
 				cin.getline(name, 100, '\n');
 			}
+			strncpy(name, toCamelCase(name).c_str(), 99); // 99 to leave space for null-terminator
+			name[99] = '\0'; // Ensure termination
 
 			cout << "Enter item amount: ";
 			cin >> amount;
@@ -95,12 +98,12 @@ class Item {
 			return mysql_query(conn, query.c_str()) == 0;
 		}
 
-		void viewItem() {// Read (can also be used for searching
+		void viewItem() {// Read (can also be used for searching)
 			string input;
 			cout << "Enter Item ID or Item Name: ";
 			getline(cin, input);
 
-			string query = "SELECT * FROM item WHERE ID='" + string(input) + "' OR NAME='" + string(input) + "'";
+			string query = "SELECT * FROM item WHERE ID='" + string(toUpperCase(input)) + "' OR NAME='" + string(toCamelCase(input)) + "'";
 			if (mysql_query(conn, query.c_str()) != 0) {
 				cout << "Error fetching item: " << mysql_error(conn) << endl;
 				return;
@@ -112,9 +115,9 @@ class Item {
 					strcpy(ID, row[0]);
 					strcpy(donorID, row[1]);
 					strcpy(name, row[2]);
-					setAmount(stoi(row[3]));
+					setAmount(atoi(row[3]));
 					setCategory(row[4]);
-					setDescription(row[5]);
+					setDescription(row[5] ? row[5] : "NULL");
 					setDateAdded(row[6]);
 
 					cout << "Item ID: " << ID << endl;
@@ -122,7 +125,7 @@ class Item {
 					cout << "Name: " << name << endl;
 					cout << "Amount: " << amount << endl;
 					cout << "Category: " << category << endl;
-					cout << "Description: " << (description ? description : "") << endl;
+					cout << "Description: " << description << endl;
 					cout << "Date Added: " << dateAdded << endl;
 
 					return;
@@ -134,7 +137,7 @@ class Item {
 			}
 		}
 
-		void viewAllItems(const string &query) {// Read
+		void viewAllItems(const string &query, string role) {// Read
 			if (mysql_query(conn, query.c_str()) != 0) {
 				cout << "Error fetching items: " << mysql_error(conn) << endl;
 				return;
@@ -150,19 +153,31 @@ class Item {
 					 << setw(50) << "Description" << "| "
 					 << setw(20) << "Date Added" << " |"
 					 << endl;
-				cout << setw(180) << setfill('-') << "" << endl;
+				cout << setw(168) << setfill('-') << "" << endl;
 				while ((row = mysql_fetch_row(res))) {
 					cout << left << "| "
-						 << setfill(' ') << setw(10) << row[0] << "| "
-						 << setfill(' ') << setw(10) << row[1] << "| "
-						 << setfill(' ') << setw(50) << row[2] << "| "
-						 << setfill(' ') << setw(10) << row[3] << "| "
-						 << setfill(' ') << setw(10) << row[4] << "| "
-						 << setfill(' ') << setw(50) << row[5] << "| "
-						 << setfill(' ') << setw(20) << row[6] << " |"
+						 << setfill(' ') << setw(10) << row[0] << "| "//ID
+						 << setfill(' ') << setw(10) << row[1] << "| "//Donor ID
+						 << setfill(' ') << setw(50) << row[2] << "| ";//Name
+
+					if (strcmp(row[4], "Money") == 0) {
+						// Category is "Money"
+						if (role == "Admin") {
+							cout << setfill(' ') << setw(10) << row[3] << "| ";// Show amount only to Admin
+						} else {
+							cout << setfill(' ') << setw(10) << " " << "| ";// Blank for non-Admins
+						}
+					} else {
+						// Any other category
+						cout << setfill(' ') << setw(10) << row[3] << "| ";// Show amount to everyone
+					}
+
+					cout << setfill(' ') << setw(10) << row[4] << "| "//Category
+						 << setfill(' ') << setw(50) << row[5] << "| "//Description
+						 << setfill(' ') << setw(20) << row[6] << " |"//Date Added
 						 << endl;
 				}
-				cout << setw(180) << setfill('-') << "" << endl;
+				cout << setw(168) << setfill('-') << "" << endl;
 				cout << endl;
 				mysql_free_result(res);
 			}

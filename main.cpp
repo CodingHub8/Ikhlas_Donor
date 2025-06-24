@@ -7,53 +7,6 @@
 using namespace std;
 
 // Reusable functions start
-void viewRequests(const string& query) {
-	vector<Request> requests;
-	if (mysql_query(conn, query.c_str()) != 0) {
-		cout << "Error fetching requests: " << mysql_error(conn) << endl;
-		return;
-	}
-	res = mysql_store_result(conn);
-	if (res) {
-		cout << left << "| "
-			 << setfill(' ') << setw(10) << "ID" << + "| "//ID
-			 << setfill(' ') << setw(13) << "Recipient ID" << + "| "//recipientID
-			 << setfill(' ') << setw(10) << "Item ID" << + "| "//itemID
-			 << right
-			 << setfill(' ') << setw(10) << "Amount" << + "| "//amount
-			 << left
-			 << setfill(' ') << setw(50) << "Request Address" << + "| "//requestAddress
-			 << setfill(' ') << setw(20) << "Request Date" << + "| "//requestDate
-			 << setfill(' ') << setw(50) << "Description" << + "| "//description set to 50 characters length max
-			 << setfill(' ') << setw(10) << "Status" << + " |"//status
-			 << endl;
-		cout << setw(191) << setfill('-') << "" << endl;
-		while ((row = mysql_fetch_row(res))) {
-			string desc = row[6] ? row[6] : "NULL";
-			if (desc.length() > 50) {
-				desc.replace(47, 3, "...");
-				desc = desc.substr(0, 50);
-			}
-
-			cout << left << "| "
-				 << setfill(' ') << setw(10) << row[0] << "| "//ID
-				 << setfill(' ') << setw(13) << row[1] << "| "//recipientID
-				 << setfill(' ') << setw(10) << row[2] << "| "//itemID
-				 << right
-				 << setfill(' ') << setw(10) << row[3] << "| "//amount
-				 << left
-				 << setfill(' ') << setw(50) << row[4] << "| "//requestAddress
-				 << setfill(' ') << setw(20) << row[5] << "| "//requestDate
-				 << setfill(' ') << setw(50) << desc << "| "//description set to 50 characters length max
-				 << setfill(' ') << setw(10) << row[7] << " |"//status
-				 << endl;
-		}
-		cout << setw(191) << setfill('-') << "" << endl;
-		cout << endl;
-		mysql_free_result(res);
-	}
-}
-
 void printBar(const string& label, double amount, double scale) {
 	cout << setw(17) << left << label << " | ";
 	int count = static_cast<int>(round(amount / scale));
@@ -92,7 +45,7 @@ void itemManagement(User& user) {
 			}
 			break;
 		case 2:// Edit item
-			item.viewAllItems(query);//view all items to get ID
+			item.viewAllItems(query, "");//view all items to get ID
 			item.viewItem();//view item to get name and price
 			if (item.editItem(user)) {
 				cout << "Item updated successfully." << endl;
@@ -112,7 +65,7 @@ void itemManagement(User& user) {
 				if (viewChoice == 1) {
 					item.viewItem();
 				} else if (viewChoice == 2) {
-					item.viewAllItems(query);
+					item.viewAllItems(query, "");
 				} else if (viewChoice == 0) {
 					break;
 				} else {
@@ -123,7 +76,7 @@ void itemManagement(User& user) {
 			itemManagement(user);
 			break;
 		case 4:// Delete item
-			item.viewAllItems(query);//view all items to get ID
+			item.viewAllItems(query, "");//view all items to get ID
 			if (item.deleteItem(user)) {
 				cout << "Item deleted successfully." << endl;
 			} else {
@@ -446,13 +399,15 @@ void donationReport(User& user) {//TODO: Fix some calculations
 void recipientOptions(User& user) {
 	int choice;
 	Item item;
+	Request request;
 
 	cout << "------------------ RECIPIENT ------------------" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Request Donation                         +" << endl;
 	cout << "+ 2. View Request Status                      +" << endl;
-	cout << "+ 3. Edit Profile                             +" << endl;
-	cout << "+ 4. Delete Profile                           +" << endl;
+	cout << "+ 3. Cancel Request                           +" << endl;
+	cout << "+ 4. Edit Profile                             +" << endl;
+	cout << "+ 5. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
@@ -461,19 +416,27 @@ void recipientOptions(User& user) {
 	system("cls");//clear text
 	switch(choice){
 		case 1://Request donation
-			item.viewAllItems("SELECT * FROM item");//view all items
-			if (Request request; request.createRequest(user)) {
+			item.viewAllItems("SELECT * FROM item", "");//view all items
+			if (request.createRequest(user)) {
 				cout << "Request created!" << endl;
 			} else {
 				cout << "Request failed or cancelled. Please try again." << endl;
 			}
 			break;
 		case 2://Request status
-			viewRequests("SELECT * FROM request WHERE RECIPIENTID = '" + string(user.getID()) + "'");
+			request.viewAllRequests("SELECT * FROM request WHERE RECIPIENTID = '" + string(user.getID()) + "'");
 			break;
-		case 3://Edit profile
+		case 3://Cancel request
+			request.viewAllRequests("SELECT * FROM request WHERE RECIPIENTID = '" + string(user.getID()) + "' AND STATUS = 'pending'");
+			if (request.cancelRequest(user)) {
+				cout << "Request cancelled!" << endl;
+			} else {
+				cout << "Cancellation failed!" << endl;
+			}
+			break;
+		case 4://Edit profile
 			user.editProfile(); break;
-		case 4://Delete profile
+		case 5://Delete profile
 			if (user.deleteProfile()) {
 				userMenu();
 			}
@@ -515,24 +478,26 @@ void adminMenu() {
 				adminOptions(admin);
 			} else {
 				cout << "Invalid login credentials" << endl;
-				system("pause");
 			}
 			break;
 		case 2:
 			cout << "+++++ ADMIN SIGN UP +++++" << endl;
 			admin.signup();
-			system("pause");
 			break;
 		case 0: return;//return to previous page
 		default: cout << "Invalid choice. Please try again." << endl << endl;
 	}
-
+	system("pause");
 	adminMenu();
 }
 
 void adminOptions(Admin& admin) {
 	system("cls");//clear text
 	int choice;
+	int viewChoice;
+	User user;
+	Item item;
+	Request request;
 
 	cout << "WELCOME, " << admin.getUsername() << "!" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
@@ -540,8 +505,11 @@ void adminOptions(Admin& admin) {
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 	cout << "+ 1. Approve/Reject Pending Request           +" << endl;
 	cout << "+ 2. View Report                              +" << endl;
-	cout << "+ 3. Edit Profile                             +" << endl;
-	cout << "+ 4. Delete Profile                           +" << endl;
+	cout << "+ 3. View User Profile                        +" << endl;
+	cout << "+ 4. View All Requests                        +" << endl;
+	cout << "+ 5. View All Items                           +" << endl;
+	cout << "+ 6. Edit Profile                             +" << endl;
+	cout << "+ 7. Delete Profile                           +" << endl;
 	cout << "+ 0. Back                                     +" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++" << endl << endl;
 	cout << "Please choose from the option(s) above: ";
@@ -550,26 +518,75 @@ void adminOptions(Admin& admin) {
 	system("cls");//clear text
 	switch(choice){
 		case 1://Approve pending requests
-			viewRequests("SELECT * FROM request WHERE STATUS = 'pending'");
+			request.viewAllRequests("SELECT * FROM request WHERE STATUS = 'pending'");//Only view pending requests
 			processRecipientRequest();
 			break;
 		case 2://View report
 			viewOverallReport();
 			break;
-		case 3:
+		case 3://View user profile
+			user.viewProfile();
+			break;
+		case 4://View Requests
+			do {
+				system("cls");//clear text
+				cout << "1. Search for a request" << endl;
+				cout << "2. View all requests" << endl;
+				cout << "0. Back" << endl;
+				cout << "Please choose from the option(s) above: ";
+				inputint(viewChoice);
+
+				if (viewChoice == 1) {
+					request.viewRequest();
+					system("pause");//pause to view the result
+				} else if (viewChoice == 2) {
+					request.viewAllRequests("SELECT * FROM request");
+					system("pause");//pause to view the result
+				} else if (viewChoice == 0) {
+					break;
+				} else {
+					cout << "Invalid choice. Please try again." << endl << endl;
+					system("pause");//pause to view the result
+				}
+			} while (true);
+			break;
+		case 5://View Items
+			do {
+				system("cls");//clear text
+				cout << "1. Search for an item" << endl;
+				cout << "2. View all donated items" << endl;
+				cout << "0. Back" << endl;
+				cout << "Please choose from the option(s) above: ";
+				inputint(viewChoice);
+
+				if (viewChoice == 1) {
+					item.viewItem();
+					system("pause");//pause to view the result
+				} else if (viewChoice == 2) {
+					item.viewAllItems("SELECT * FROM item", "Admin");
+					system("pause");//pause to view the result
+				} else if (viewChoice == 0) {
+					break;
+				} else {
+					cout << "Invalid choice. Please try again." << endl << endl;
+					system("pause");//pause to view the result
+				}
+			} while (true);
+			break;
+		case 6:
 			admin.editProfile();
 			break;
-		case 4:
+		case 7:
 			if (admin.deleteProfile()) {
 				system("pause");//pause to view the result
 				return;
 			}
 			break;
 		case 0: return;//return to previous page
-		default: cout << "Invalid choice. Please try again." << endl << endl;
+		default: cout << "Invalid choice. Please try again." << endl << endl; break;
 	}
 
-	system("pause");
+	system("pause");//pause to view the result
 	adminOptions(admin);
 }
 
@@ -605,10 +622,36 @@ void processRecipientRequest() {
 		}
 	}while (true);
 
+	query = "SELECT u.* FROM request r JOIN user u ON r.RECIPIENTID = u.ID WHERE r.ID = '" + string(requestID) + "'";
+	if (mysql_query(conn, query.c_str()) != 0) {
+		cout << "Error fetching user details: " << mysql_error(conn) << endl;
+		return;
+	}
+	res = mysql_store_result(conn);
+	if (res) {
+		row = mysql_fetch_row(res);
+		if (row) {//will display recipient profile to ease admin's task in making decisions before approving/rejecting
+			cout << "---------- Recipient Profile ----------" << endl;
+			cout << "ID         : " << row[0] << endl;
+			cout << "Name       : " << row[1] << endl;
+			cout << "Email      : " << row[2] << endl;
+			cout << "Phone      : " << row[4] << endl;
+			cout << "Address    : " << row[5] << endl;
+			cout << "Role       : " << row[6] << endl;
+			cout << "---------------------------------------" << endl;
+		} else {
+			cout << "No user found for this request." << endl;
+		}
+		mysql_free_result(res);
+	} else {
+		cout << "No user found for this request." << endl;
+	}
+
 	strcpy(requestID, toUpperCase(requestID).c_str());
 
-	cout << "Do you want to [1]Approve or [2]Reject this request?" << endl;
 	int choice;
+	cout << "Do you want to [1]Approve or [2]Reject this request?" << endl;
+	cout << "-> ";
 	inputint(choice);
 
 	if (choice == 1) {
@@ -735,49 +778,61 @@ void viewOverallReport() {//TODO: Fix calculations
 	    }
 
 	    // Write CSV header
-	    csvFile << "Category,Donation Count,Total Donated,Approved Count,Pending Count,Failed Count" << endl;
+	    csvFile << "Category,Donations Made,Total Units Donated,Approved Requests,Pending Requests,Failed Requests" << endl;
 
 	    // Print report header to console
 	    cout << "\n" << periodTitle << "\n";
 	    cout << string(periodTitle.length(), '=') << "\n\n";
 	    cout << left << setw(12) << "Category"
-	         << right << setw(15) << "Donation Count"
-	         << setw(15) << "Total Donated"
-	         << setw(15) << "Approved Count"
-	         << setw(15) << "Pending Count"
-	         << setw(15) << "Failed Count" << endl;
-	    cout << setw(87) << setfill('-') << "" << setfill(' ') << endl;
+	         << right << setw(15) << "Donations Made"
+	         << setw(21) << "Total Units Donated"
+	         << setw(17) << "Approved Requests"
+	         << setw(17) << "Pending Requests"
+	         << setw(17) << "Failed Requests" << endl;
+	    cout << setw(99) << setfill('-') << "" << setfill(' ') << endl;
 
 	    // Process each row of data
+		string category;
+	    double totalDonated = 0, donationCount = 0;
+    	double totalRequested = 0, totalApproved = 0, totalPending = 0, totalFailed = 0;
 	    while ((row = mysql_fetch_row(res))) {
-	        string category = row[0] ? row[0] : "Unknown";
-	        string donationCount = row[1] ? row[1] : "0";
-	        string totalDonated = row[2] ? row[2] : "0";
-	        string totalApproved = row[3] ? row[3] : "0";
-	        string totalPending = row[4] ? row[4] : "0";
-	        string totalFailed = row[5] ? row[5] : "0";
+		    category = row[0] ? row[0] : "Unknown";
+		    donationCount = row[1] ? atof(row[1]) : 0;
+		    totalDonated = row[2] ? atof(row[2]) : 0;
+		    totalApproved = row[3] ? atof(row[3]) : 0;
+		    totalPending = row[4] ? atof(row[4]) : 0;
+		    totalFailed = row[5] ? atof(row[5]) : 0;
+		    totalRequested += totalApproved + totalPending + totalFailed;
 
-	        // Print to console
-	        cout << left << setw(12) << category
-	             << right << setw(15) << donationCount
-	             << setw(15) << totalDonated
-	             << setw(15) << totalApproved
-	             << setw(15) << totalPending
-	             << setw(15) << totalFailed << endl;
+		    // Print to console
+		    cout << left << setw(12) << category
+				    << right << setw(15) << donationCount
+				    << setw(21) << totalDonated
+				    << setw(17) << totalApproved
+				    << setw(17) << totalPending
+				    << setw(17) << totalFailed << endl;
 
-	        // Write to CSV
-	        csvFile << category << ","
-					<< donationCount << ","
-					<< totalDonated << ","
-	                << totalApproved << ","
-					<< totalPending << ","
-					<< totalFailed << endl;
+		    // Write to CSV
+		    csvFile << category << ","
+				    << donationCount << ","
+				    << totalDonated << ","
+				    << totalApproved << ","
+				    << totalPending << ","
+				    << totalFailed << endl;
 	    }
 
 	    // Close CSV file
 	    csvFile.close();
 	    mysql_free_result(res);
 
+	    // Analysis section (add this after values have been calculated)
+	    if (totalDonated > totalRequested) {
+		    cout << "- More items were donated (" << totalDonated << ") than requested (" << totalRequested << ") during this period.\n";
+	    } else if (totalDonated < totalRequested) {
+		    cout << "- More items were requested (" << totalRequested << ") than donated (" << totalDonated << ") during this period.\n";
+	    } else {
+		    cout << "- Donation and request amounts are equal (" << totalDonated << ") for this period.\n";
+	    }
 	    // Print summary
 	    cout << "\nReport saved as: " << filename << endl;
 	    cout << "Location: " << filesystem::current_path().string() << "\\" << filename << endl;

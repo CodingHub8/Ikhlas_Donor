@@ -58,7 +58,7 @@ class Admin {
 		}
 
 		void signup() {//Create function
-			char nameInput[100], emailInput[100], phoneInput[20], passwordInput[255], confirmPassword[255];
+			char usernameInput[100], emailInput[100], phoneInput[20], passwordInput[255], confirmPassword[255];
 		    string addressInput, roleInput;
 
 			// Check if there is already an admin account
@@ -68,26 +68,28 @@ class Admin {
 
 			if (qstate == 0 && res) {
 			    row = mysql_fetch_row(res);
-			    if (row && atoi(row[0]) >= 3) {
-			        cout << "The total of existing admin accounts cannot exceed its limit (3)." << endl;
-			        mysql_free_result(res);
-			        return;
+			    if (row) {
+			        if (atoi(row[0]) >= 3) {
+				        cout << "The total of existing admin accounts has reached its limit (3)." << endl;
+				        mysql_free_result(res);
+				        return;
+			        }
 			    }
 			    mysql_free_result(res);
 			}
 
 			while (true) {// Uniqueness check for username
 				cout << "Enter your username: ";
-				cin.getline(nameInput, 100, '\n');
+				cin.getline(usernameInput, 100, '\n');
 
 				// Validate name not empty
-				if (strlen(nameInput) == 0) {
+				if (strlen(usernameInput) == 0) {
 					cout << "Username cannot be empty. Please re-enter: ";
 					continue;
 				}
 
 				// Uniqueness check for username
-				string usernameQuery = "SELECT * FROM admin WHERE USERNAME = '" + string(nameInput) + "'";
+				string usernameQuery = "SELECT * FROM admin WHERE USERNAME = '" + string(usernameInput) + "'";
 				qstate = mysql_query(conn, usernameQuery.c_str());
 				res = mysql_store_result(conn);
 				if (!qstate && res && mysql_num_rows(res) > 0) {
@@ -173,13 +175,14 @@ class Admin {
 			// Insert into DB
 		    string insertQuery =
 		        "INSERT INTO admin (USERNAME, EMAIL, PASSWORD, PHONE) VALUES ('" +
-		        string(nameInput) + "', '" +
+		        string(usernameInput) + "', '" +
 		        string(emailInput) + "', '" +
 		        encryptedPassword + "', " +
 		        phoneValue + ")";
 		    qstate = mysql_query(conn, insertQuery.c_str());
 
 		    if (!qstate) {
+		    	saveCredentials("Generated Credentials/admin.txt", false, usernameInput, passwordInput);
 		        cout << "Sign-up successful! You may now log in." << endl;
 		    } else {
 		        cout << "Failed to sign up: " << mysql_error(conn) << endl;

@@ -45,10 +45,10 @@ class User {
 				if (res != nullptr && mysql_num_rows(res) == 1) {
 					row = mysql_fetch_row(res);
 					if (row && row[0]) {
-						setID(*&row[0]);
-						setName(*&row[1]);
-						setEmail(*&row[2]);
-						setPhone(*&row[4] != nullptr ? *&row[4] : "NULL");
+						setID(row[0]);
+						setName(row[1]);
+						setEmail(row[2]);
+						setPhone(row[4] != nullptr ? row[4] : "NULL");
 						setAddress(row[5] != nullptr ? row[5] : "NULL");
 						setRole(row[6]);
 						mysql_free_result(res);
@@ -178,10 +178,50 @@ class User {
 		    qstate = mysql_query(conn, insertQuery.c_str());
 
 		    if (!qstate) {
+		    	saveCredentials("Generated Credentials/admin.txt", false, emailInput, passwordInput);
 		        cout << "Sign-up successful! You may now log in." << endl;
 		    } else {
 		        cout << "Failed to sign up: " << mysql_error(conn) << endl;
 		    }
+		}
+
+		void viewProfile() {//can be used as search
+			string input;
+			cout << "Enter User ID or User Name: ";
+			getline(cin, input);
+
+			string query = "SELECT * FROM user WHERE ID='" + string(toUpperCase(input)) + "' OR NAME LIKE '%" + string(toCamelCase(input)) + "%'";
+			if (mysql_query(conn, query.c_str()) != 0) {
+				cout << "Error fetching user profile: " << mysql_error(conn) << endl;
+				return;
+			}
+			res = mysql_store_result(conn);
+			if (res) {
+				if (mysql_num_rows(res) >= 1) {
+					while ((row = mysql_fetch_row(res))) {//can display 1 or multiple users
+						setID(row[0]);
+						setName(row[1]);
+						setEmail(row[2]);
+						setPassword(row[3]);
+						setPhone(row[4] ? row[4] : "NULL");
+						setAddress(row[5] ? row[5] : "NULL");
+						setRole(row[6]);
+						cout << "User ID: " << ID << endl;
+						cout << "Name: " << name << endl;
+						cout << "Email: " << email << endl;
+						cout << "Password: " << password << " (Encrypted)" << endl;
+						cout << "Phone: " << phone << endl;
+						cout << "Address: " << address << endl;
+						cout << "Role: " << role << endl;
+						if (mysql_num_rows(res) > 1) {
+							cout << setw(address.length()) << setfill('-') << endl;
+						}
+					}
+				}
+				mysql_free_result(res);
+			} else {
+				cout << "No user data found." << endl;
+			}
 		}
 
 		void editProfile() {// Update function (select specific field)
@@ -363,6 +403,13 @@ class User {
 		}
 		void setEmail(const char* email) {
 			strcpy(this->email, email);
+		}
+
+		const char* getPassword() const {
+			return password;
+		}
+		void setPassword(const char* password) {
+			strcpy(this->password, password);
 		}
 
 		const char* getPhone() const {

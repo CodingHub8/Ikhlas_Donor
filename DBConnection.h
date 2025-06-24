@@ -78,8 +78,6 @@ class DBConnection {
 
         static void PopulateDatabase() {
             // Counters for ID generation
-            int donorCount = 1;
-            int recipientCount = 1;
             map<string, int> itemCounters = {
                 {"Food", 1},
                 {"Clothing", 1},
@@ -97,6 +95,8 @@ class DBConnection {
                 if ((row = mysql_fetch_row(res)) != nullptr) {
                     rowCount = atoi(row[0]);
                     if (rowCount < 20) {
+                        int recipientCount = 1;
+                        int donorCount = 1;
                         for (int i = 0; i < 20; i++) {
                             string id;
                             string role;
@@ -231,7 +231,7 @@ class DBConnection {
                                 case 'M':
                                     idPrefix = "M";
                                     name = "Monetary Donation";
-                                    description = "RM " + to_string(amount) + " donation";
+                                    description = "Monetary Donation";
                                     break;
                             }
 
@@ -240,13 +240,8 @@ class DBConnection {
 
                             string donorId = donorIds[faker::number::integer<size_t>(0, donorIds.size() - 1)];
 
-                            // Generate current datetime
-                            auto now = chrono::system_clock::now();
-                            time_t now_time = chrono::system_clock::to_time_t(now);
-                            tm now_tm = *localtime(&now_time);
-                            stringstream dateStream;
-                            dateStream << put_time(&now_tm, "%Y-%m-%d %H:%M:%S");
-                            string dateAdded = dateStream.str();
+                            // Generate random datetime between 2020 until 2025
+                            string dateAdded = randomDateTime(2020, 2025);
 
                             string query = "INSERT INTO item (ID, DONORID, NAME, AMOUNT, CATEGORY, DESCRIPTION, DATEADDED) VALUES ('" +
                                            id + "', '" + donorId + "', '" + name + "', " + to_string(amount) + ", '" +
@@ -301,29 +296,15 @@ class DBConnection {
                             int amount = faker::number::integer<>(1, 10);
                             string requestAddress = faker::location::streetAddress() + ", " + faker::location::city();
 
-                            // Generate random date within last 30 days
-                            auto now = chrono::system_clock::now();
-                            auto past = now - chrono::hours(24 * 30);
-
-                            // Convert to time_t
-                            time_t past_time = chrono::system_clock::to_time_t(past);
-                            time_t now_time = chrono::system_clock::to_time_t(now);
-
-                            // Generate random timestamp between these two
-                            time_t random_time = faker::number::integer<int64_t>(past_time, now_time);
-
-                            // Convert back to tm
-                            tm request_tm = *localtime(&random_time);
-                            stringstream dateStream;
-                            dateStream << put_time(&request_tm, "%Y-%m-%d %H:%M:%S");
-                            string requestDate = dateStream.str();
+                            // Generate random datetime between 2020 until 2025
+                            string requestDate = randomDateTime(2020, 2025);
 
                             string description = faker::lorem::sentences(0, 2);// generate between 0 to 2 sentences
 
                             string status;
                             switch (int statusRand = faker::number::integer<>(0, 2)) {
                                 case 0: status = "pending"; break;
-                                case 1: status = "failed"; break;
+                                case 1: status = "rejected"; break;
                                 case 2: status = "approved"; break;
                             }
 
