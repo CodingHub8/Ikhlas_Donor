@@ -8,7 +8,7 @@ class Item {
 		char ID[10];//Have different formats per category (e.g., F001, C001, T001, M001)
 		char donorID[10];
 		char name[100];
-		unsigned int amount;
+		int amount;
 		char category[100];// food, clothing, toy, money
 		char description[255];// can put an expiry date if food category
 		string dateAdded;//auto generated
@@ -34,14 +34,21 @@ class Item {
 			cout << "[C]lothing" << endl;
 			cout << "[T]oy" << endl;
 			cout << "[M]oney" << endl;
-			cout << "Enter category code: ";
-			cin >> catCode;
-			catCode = toupper(catCode); // Convert to uppercase for consistency
-			if (catCode != 'F' && catCode != 'C' && catCode != 'T' && catCode != 'M') {
-				catCode = 'X';
-				strcpy(category, "Unknown");
-			}
+			cout << "Enter category code (Enter '0' to cancel): ";
+			do{
+				cin >> catCode;
+				if (catCode == '0') {
+					return false;
+				}
 
+				if (catCode != 'F' && catCode != 'C' && catCode != 'T' && catCode != 'M') {
+					cout << "Invalid category code. Please re-enter: ";
+				} else {
+					break;
+				}
+			}while (true);// Validate category code
+
+			catCode = toupper(catCode); // Convert to uppercase for consistency
 			cout << "Enter item name: ";
 			cin.ignore();
 			cin.getline(name, 100, '\n');
@@ -53,10 +60,10 @@ class Item {
 			name[99] = '\0'; // Ensure termination
 
 			cout << "Enter item amount: ";
-			cin >> amount;
+			inputint(amount);
 			while (amount <= 0) {
 				cout << "Amount must be greater than 0. Please re-enter: ";
-				cin >> amount;
+				inputint(amount);
 			}
 
 			switch (catCode) {
@@ -68,7 +75,6 @@ class Item {
 
 			if (catCode == 'F') {//Food category must have expiry date
 				cout << "Enter expiry date (YYYY-MM-DD): ";
-				cin.ignore();
 				cin.getline(description, 255, '\n');
 				while (strlen(description) == 0 || !isValidDate(description) || !isFutureDate(description)) {
                     cout << "Invalid expiry date. Please re-enter: ";
@@ -81,7 +87,6 @@ class Item {
 				description[254] = '\0'; // Ensure null-termination
 			} else {
 				cout << "Enter item description (Leave empty if none): ";
-				cin.ignore();
 				cin.getline(description, 255, '\n');
 			}
 
@@ -137,7 +142,7 @@ class Item {
 			}
 		}
 
-		void viewAllItems(const string &query, string role) {// Read
+		void viewAllItems(const string &query, const string &role) {// Read
 			if (mysql_query(conn, query.c_str()) != 0) {
 				cout << "Error fetching items: " << mysql_error(conn) << endl;
 				return;
@@ -219,8 +224,7 @@ class Item {
 		        cout << "Enter your choice: ";
 
 		        int choice;
-		        cin >> choice;
-		        cin.ignore();
+		        inputint(choice);
 
 		        switch (choice) {
 			        case 1: {
@@ -236,8 +240,8 @@ class Item {
 			        case 2: {
 			            cout << "Enter new amount (currently " << amount << "): ";
 			            do {
-			                unsigned int newAmount;
-			                cin >> newAmount;
+			                int newAmount;
+			                inputint(newAmount);
 			                if (newAmount > 0) {
 			                    amount = newAmount;
 			                    updated = true;

@@ -118,7 +118,7 @@ class User {
 
 		    // Phone validation and uniqueness check
 		    while (true) {
-		        cout << "Enter your phone number (leave empty if none): ";
+		        cout << "Enter your phone number. Format: 01XXXXXXXX (leave empty if none): ";
 		        cin.getline(phoneInput, 20, '\n');
 		        string phoneStr = phoneInput;
 

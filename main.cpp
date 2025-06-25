@@ -131,7 +131,7 @@ void userMenu(){
 			system("pause");
 			break;
 		case 0: return;//return to previous page
-		default: cout << "Invalid choice. Please try again." << endl << endl;
+		default: cout << "Invalid choice. Please try again." << endl << endl; system("pause");
 	}
 
 	userMenu();
@@ -208,8 +208,18 @@ void donationReport(User& user) {//TODO: Fix some calculations
             cout << "Monthly report" << endl;
             cout << "Enter year: ";
             inputint(year);
+
             cout << "Enter month (1-12): ";
-            inputint(month);
+    		do{
+				inputint(month);
+    			if(month < 1 || month > 12) {
+    				cout << "Invalid month. Please try again." << endl;
+    				cout << "Enter month (1-4): ";
+    			} else {
+    				break;
+    			}
+    		}while(true);
+
             periodTitle = "Monthly Report for " + to_string(year) + "-" + (month < 10 ? "0" : "") + to_string(month);
             periodStr = to_string(year) + "-" + (month < 10 ? "0" : "") + to_string(month);
             break;
@@ -217,8 +227,18 @@ void donationReport(User& user) {//TODO: Fix some calculations
             cout << "Quarterly report" << endl;
             cout << "Enter year: ";
             inputint(year);
-            cout << "Enter quarter (1-4): ";
-            inputint(quarter);
+
+    		cout << "Enter quarter (1-4): ";
+    		do{
+	            inputint(quarter);
+    			if(quarter < 1 || quarter > 4) {
+    				cout << "Invalid quarter. Please try again." << endl;
+    				cout << "Enter quarter (1-4): ";
+    			} else {
+    				break;
+    			}
+    		}while(true);
+
             periodTitle = "Quarterly Report for Q" + to_string(quarter) + " " + to_string(year);
             periodStr = "Q" + to_string(quarter) + " " + to_string(year);
             break;
@@ -230,7 +250,7 @@ void donationReport(User& user) {//TODO: Fix some calculations
             periodStr = to_string(year);
             break;
         default:
-            cout << "Invalid choice. Please try again." << endl << endl;
+            cout << "Invalid choice. Please try again." << endl << endl; system("pause");
             donationReport(user); // recursion
             return;
     }
@@ -727,7 +747,15 @@ void viewOverallReport() {//TODO: Fix calculations
 		if (choice == 1) {
 			// Monthly
 			cout << "Enter month (1-12): ";
-			inputint(month);
+			do{
+				inputint(month);
+				if(month < 1 || month > 12) {
+					cout << "Invalid month. Please try again." << endl;
+					cout << "Enter month (1-4): ";
+				} else {
+					break;
+				}
+			}while(true);
 			periodTitle = "Monthly Report for " + to_string(year) + "-" + (month < 10 ? "0" : "") + to_string(month);
 			filename = toLowerCase(getMonthName(month)) + "_" + to_string(year) + "_report.csv";
 			dateCondition = "YEAR(item.DATEADDED) = " + to_string(year) +
@@ -736,7 +764,16 @@ void viewOverallReport() {//TODO: Fix calculations
 		} if (choice == 2) {
 			// Quarterly
 			cout << "Enter quarter (1-4): ";
-			inputint(quarter);
+			do{
+				inputint(quarter);
+				if(quarter < 1 || quarter > 4) {
+					cout << "Invalid quarter. Please try again." << endl;
+					cout << "Enter quarter (1-4): ";
+				} else {
+					break;
+				}
+			}while(true);
+
 			periodTitle = "Quarterly Report for Q" + to_string(quarter) + " " + to_string(year);
 			filename = "quarter" + to_string(quarter) + "_" + to_string(year) + "_report.csv";
 			startMonth = (quarter - 1) * 3 + 1;
