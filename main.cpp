@@ -882,7 +882,7 @@ int main() {
 				mysql_close(conn);
 				system("pause");
 				exit(0);
-			default: cout << "Invalid choice. Please try again." << endl << endl;
+			default: cout << "Invalid choice. Please try again." << endl << endl; system("pause"); break;
 		}
 	}while(true);
 }
