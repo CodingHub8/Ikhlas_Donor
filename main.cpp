@@ -190,6 +190,7 @@ void donorOptions(User& user) {
 
 void donationReport(User& user) {//TODO: Fix some calculations
     system("cls"); //clear text
+	cout << "-----   DONOR   -----" << endl;
     cout << "1. Monthly" << endl;
     cout << "2. Quarterly" << endl;
     cout << "3. Yearly" << endl;
@@ -705,6 +706,7 @@ void viewOverallReport() {//TODO: Fix calculations
 
 	do {
 		system("cls");//clear text
+		cout << "-----   ADMIN   -----" << endl;
 		cout << "1. Monthly Report" << endl;
 	    cout << "2. Quarterly Report" << endl;
 	    cout << "3. Yearly Report" << endl;
