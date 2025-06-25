@@ -216,6 +216,7 @@ class User {
 						if (mysql_num_rows(res) > 1) {
 							cout << setw(address.length()) << setfill('-') << endl;
 						}
+						cout << endl;
 					}
 				}
 				mysql_free_result(res);

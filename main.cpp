@@ -636,8 +636,8 @@ void processRecipientRequest() {
 			cout << "ID         : " << row[0] << endl;
 			cout << "Name       : " << row[1] << endl;
 			cout << "Email      : " << row[2] << endl;
-			cout << "Phone      : " << row[4] << endl;
-			cout << "Address    : " << row[5] << endl;
+			cout << "Phone      : " << (row[4] ? row[4] : "NULL") << endl;
+			cout << "Address    : " << (row[5] ? row[5] : "NULL") << endl;
 			cout << "Role       : " << row[6] << endl;
 			cout << "---------------------------------------" << endl;
 		} else {
