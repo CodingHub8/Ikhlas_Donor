@@ -297,7 +297,24 @@ class DBConnection {
                             string requestAddress = faker::location::streetAddress() + ", " + faker::location::city();
 
                             // Generate random datetime between 2020 until 2025
-                            string requestDate = randomDateTime(2020, 2025);
+                            string dateQuery = "SELECT DATEADDED FROM item WHERE ID = '" + itemId + "'";
+                            string requestDate;
+                            bool valid;
+                            do {
+                                requestDate = randomDateTime(2020, 2025);
+                                qstate = mysql_query(conn, dateQuery.c_str());
+                                valid = true;
+                                if (qstate == 0) {
+                                    res = mysql_store_result(conn);
+                                    while ((row = mysql_fetch_row(res))) {
+                                        if (row[0] >= requestDate) {//Force the request date to be after the item date
+                                            valid = false;
+                                            break;
+                                        }
+                                    }
+                                    mysql_free_result(res);
+                                }
+                            } while (!valid);
 
                             string description = faker::lorem::sentences(0, 2);// generate between 0 to 2 sentences
 

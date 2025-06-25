@@ -64,16 +64,17 @@ void itemManagement(User& user) {
 
 				if (viewChoice == 1) {
 					item.viewItem();
+					system("pause");//pause to view the result
 				} else if (viewChoice == 2) {
 					item.viewAllItems(query, "");
+					system("pause");//pause to view the result
 				} else if (viewChoice == 0) {
 					break;
 				} else {
 					cout << "Invalid choice. Please try again." << endl << endl;
+					system("pause");//pause to view the result
 				}
-				system("pause");//pause to view the result
 			} while (true);
-			itemManagement(user);
 			break;
 		case 4:// Delete item
 			item.viewAllItems(query, "");//view all items to get ID
@@ -650,7 +651,7 @@ void processRecipientRequest() {
 	strcpy(requestID, toUpperCase(requestID).c_str());
 
 	int choice;
-	cout << "Do you want to [1]Approve or [2]Reject this request?" << endl;
+	cout << "Do you want to [1]Approve or [2]Reject this request? (Enter '0' to cancel)" << endl;
 	cout << "-> ";
 	inputint(choice);
 
@@ -658,6 +659,8 @@ void processRecipientRequest() {
 		status = "approved";
 	} else if (choice == 2) {
 		status = "failed";
+	} else if (choice == 0) {
+		return;
 	}
 
 	query = "SELECT r.AMOUNT as reqAmount, i.AMOUNT as itemAmount, r.ITEMID FROM request r JOIN item i ON r.ITEMID = i.ID WHERE r.ID = '"
@@ -710,6 +713,11 @@ void viewOverallReport() {//TODO: Fix calculations
 	    inputint(choice);
 
 	    if (choice == 0) return;
+		if (choice < 1 || choice > 3) {
+			cout << "Invalid choice. Please try again." << endl << endl;
+			system("pause");//pause to view the result
+			continue;
+		}
 
 	    cout << "Enter year: ";
 	    inputint(year);
@@ -741,7 +749,6 @@ void viewOverallReport() {//TODO: Fix calculations
 			dateCondition = "YEAR(item.DATEADDED) = " + to_string(year);
 			break;
 		}
-		cout << "Invalid choice. Please try again." << endl << endl;
 	}while (true);
 	
     // Query to get all donations and requests for the period
@@ -752,7 +759,7 @@ void viewOverallReport() {//TODO: Fix calculations
                    "COUNT(CASE WHEN request.STATUS = 'approved' THEN 1 ELSE NULL END) as approved_count, "
                    "COUNT(CASE WHEN request.STATUS = 'pending' THEN 1 ELSE NULL END) as pending_count, "
                    "COUNT(CASE WHEN request.STATUS = 'failed' THEN 1 ELSE NULL END) as failed_count "
-                   "FROM item LEFT JOIN request ON item.ID = request.ITEMID "
+                   "FROM item JOIN request ON item.ID = request.ITEMID "
                    "WHERE " + dateCondition + " "
                    "GROUP BY item.CATEGORY";
 
@@ -785,11 +792,11 @@ void viewOverallReport() {//TODO: Fix calculations
 	    cout << string(periodTitle.length(), '=') << "\n\n";
 	    cout << left << setw(12) << "Category"
 	         << right << setw(15) << "Donations Made"
-	         << setw(21) << "Total Units Donated"
+	         << setw(22) << "Total Units Donated"
 	         << setw(17) << "Approved Requests"
 	         << setw(17) << "Pending Requests"
 	         << setw(17) << "Failed Requests" << endl;
-	    cout << setw(99) << setfill('-') << "" << setfill(' ') << endl;
+	    cout << setw(100) << setfill('-') << "" << setfill(' ') << endl;
 
 	    // Process each row of data
 		string category;
@@ -807,7 +814,7 @@ void viewOverallReport() {//TODO: Fix calculations
 		    // Print to console
 		    cout << left << setw(12) << category
 				    << right << setw(15) << donationCount
-				    << setw(21) << totalDonated
+				    << setw(22) << totalDonated
 				    << setw(17) << totalApproved
 				    << setw(17) << totalPending
 				    << setw(17) << totalFailed << endl;
