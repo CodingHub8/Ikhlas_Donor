@@ -140,8 +140,8 @@ class DBConnection {
                 res = mysql_store_result(conn);
                 if ((row = mysql_fetch_row(res)) != nullptr) {
                     rowCount = atoi(row[0]);
-                    if (rowCount < 3) {
-                        for (int i = 0; i < 3; i++) {
+                    if (rowCount < 2) {
+                        for (int i = 0; i < 2; i++) {
                             const string username = faker::internet::username();
                             const string email = faker::internet::email();
                             const string password = faker::internet::password();

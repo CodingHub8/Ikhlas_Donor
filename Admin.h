@@ -141,7 +141,7 @@ class Admin {
 		    }
 
 		    while (true) {// Phone validation and uniqueness check
-		        cout << "Enter your phone number (leave empty if none): ";
+		        cout << "Enter your phone number. Format: 01XXXXXXXX (leave empty if none): ";
 		        cin.getline(phoneInput, 20, '\n');
 		        string phoneStr = phoneInput;
 
@@ -151,7 +151,7 @@ class Admin {
 		        }
 
 		        if (!isValidPhone(phoneStr)) {
-		            cout << "Invalid phone format. Please try again." << endl;
+		            cout << "Invalid phone format. Please try again in 01XXXXXXXX." << endl;
 		            continue;
 		        }
 		        string query = "SELECT * FROM admin WHERE PHONE = '" + phoneStr + "'";
